@@ -1,0 +1,91 @@
+<div class="flex bg-secondary">
+    <!-- Sidebar -->
+    <app-sidebar></app-sidebar>
+  
+    <!-- Main Dashboard Content -->
+    <div class="h-screen container mx-auto bg-secondary p-6 overflow-y-auto">
+      <!-- Dashboard Header -->
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-primary">Dashboard</h1>
+      </div>
+  
+      <!-- Stats Section -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Total Users -->
+        <div class="bg-whites p-6 ring-1 ring-black rounded-lg shadow-lg flex items-center">
+          <div class="bg-accent text-white p-3 rounded-full">
+            <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 13v4m0 4v-4m0-4a4 4 0 100-8 4 4 0 000 8zM6 13v4m0 4v-4m0-4a4 4 0 100-8 4 4 0 000 8z" />
+            </svg>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm text-primary">Total Users</p>
+            <p class="text-2xl font-bold text-primary">12,345</p>
+          </div>
+        </div>
+  
+        <!-- Active Chats -->
+        <div class="bg-whites p-6  ring-1 ring-black rounded-lg shadow-lg flex items-center">
+          <div class="bg-accent text-white p-3 rounded-full">
+            <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16h6m-3-3a9 9 0 110-6 9 9 0 010 6z" />
+            </svg>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm text-primary">Active Chats</p>
+            <p class="text-2xl font-bold text-primary">892</p>
+          </div>
+        </div>
+  
+        <!-- New Messages -->
+        <div class="bg-whites p-6 ring-1 ring-black rounded-lg shadow-lg flex items-center">
+          <div class="bg-accent text-white p-3 rounded-full">
+            <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h8m-8 4h10M5 6h14M5 18h14" />
+            </svg>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm text-primary">New Messages</p>
+            <p class="text-2xl font-bold text-primary">3,210</p>
+          </div>
+        </div>
+  
+        <!-- Support Tickets -->
+        <div class="bg-whites p-6 ring-1 ring-black rounded-lg shadow-lg flex items-center">
+          <div class="bg-accent text-white p-3 rounded-full">
+            <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01m-6.938 4h13.856c1.166 0 2.162-.9 2.281-2.058L21 4.058A2.25 2.25 0 0018.72 2H5.281A2.25 2.25 0 003 4.058l-.196 11.884c.119 1.158 1.115 2.058 2.281 2.058z" />
+            </svg>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm text-primary">Support Tickets</p>
+            <p class="text-2xl font-bold text-primary">74</p>
+          </div>
+        </div>
+      </div>
+  
+      <!-- Recent Activity Section -->
+      <div class="mt-8 ">
+        <h2 class="text-lg font-semibold text-primary  mb-4">Recent Activity</h2>
+        <div class="bg-whites ring-1 ring-black p-6 rounded-lg shadow-lg">
+          <div class="flex justify-between items-center mb-4">
+            <p class="text-primary">New user signed up: <strong>John Doe</strong></p>
+            <span class="text-sm text-accent">2 hours ago</span>
+          </div>
+          <div class="flex justify-between items-center mb-4">
+            <p class="text-primary">Message received in <strong>#Support</strong></p>
+            <span class="text-sm text-accent">4 hours ago</span>
+          </div>
+          <div class="flex justify-between items-center mb-4">
+            <p class="text-primary">Account <strong></strong> by Alice</p>
+            <span class="text-sm text-gray-400">1 day ago</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <p class="text-primary">New chat initiated with Support</p>
+            <span class="text-sm text-gray-400">3 days ago</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  

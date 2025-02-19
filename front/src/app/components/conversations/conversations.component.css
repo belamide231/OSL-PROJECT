@@ -1,0 +1,53 @@
+.shrink {
+    display: grid;
+    grid-template-rows: 1fr;
+    animation: shrink .3s ease forwards;
+}
+
+.shrink > div {
+    overflow: hidden;
+}
+  
+@keyframes expand {
+    from {
+        grid-template-rows: 0fr;
+    }
+    to {
+        grid-template-rows: 1fr;
+    }
+}
+
+
+.expand {
+    display: grid;
+    grid-template-rows: 0fr;
+    animation: expand .15s ease forwards;
+    transition: grid .1s ease, border-radius 3s ease;
+}
+
+.expand > div {
+    overflow: hidden;
+}
+
+@keyframes shrink {
+    from {
+        grid-template-rows: 1fr;
+    }
+    to {
+        grid-template-rows: 0fr;
+    }
+}
+
+.status-out {
+    opacity: 0;
+    height: 0px;
+    transition: opacity .1s ease, height .5s ease;
+}
+
+.status-in {
+    opacity: 1;
+    height: 10px;
+    transition: opacity .1s ease, height .5s ease;
+}
+
+

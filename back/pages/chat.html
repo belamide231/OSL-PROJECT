@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chatbox</title>
+  <script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.0.1/dist/socket.io.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f9f9f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 0;
+      margin: 0;
+    }
+    #container {
+      display: flex;
+      gap: 20px;
+      max-width: 1000px;
+      width: 100%;
+    }
+    #chatList {
+      width: 200px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background-color: #fff;
+      padding: 10px;
+      height: 500px;
+      overflow-y: auto;
+    }
+    #chatList h2 {
+      font-size: 16px;
+      margin: 0 0 10px 0;
+    }
+    #chatList ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    #chatList li {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background-color: #e1f5fe;
+      color: #333;
+      font-size: 14px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    /* #chatList li:hover {
+      background-color: #e3e3e3;
+    } */
+    #chatList li.unseen {
+      background-color: #fff3e0;
+    }
+    #chatList li .name {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    #chatList li .message {
+      font-size: 12px;
+      color: #555;
+      margin-bottom: 5px;
+    }
+    #chatList li .timestamp {
+      font-size: 10px;
+      color: #888;
+    }
+    #chatBox {
+      flex: 1;
+      max-width: 600px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background-color: #fff;
+    }
+    #messageInput {
+      border-radius: 5px;
+      border: 1px solid #ddd;
+      width: 96.5%;
+      outline: none;
+    }
+    #sendButton {
+      width: 200px;
+      background-color: #fff3e0;;
+      border-radius: 5px;
+      outline: none;
+      border: none;
+      margin-left: calc(50% - 100px);
+    }
+    #onlineUsers {
+      margin-bottom: 10px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 10px;
+      background-color: #f1f1f1;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      overflow-x: auto;
+    }
+    #onlineUsers h2 {
+      font-size: 16px;
+      margin: 0 10px 0 0;
+      white-space: nowrap;
+    }
+    #onlineUsers ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      gap: 15px;
+    }
+    #onlineUsers li {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 20px;
+      background-color: #e1f5fe;
+      color: #333;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+    #messages {
+      height: 300px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      margin-bottom: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      background-color: #f1f1f1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .message {
+      max-width: 50%;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 14px;
+      position: relative;
+      word-wrap: break-word;
+      word-break: break-word;
+      overflow-wrap: break-word;
+    }
+    .chatmate {
+      align-self: flex-start;
+      background-color: #e1f5fe;
+      color: #333;
+    }
+    .yours {
+      align-self: flex-end;
+      background-color: #fff3e0;;
+      color: #333;
+    }
+    .timestamp {
+      font-size: 10px;
+      color: #888;
+      position: relative;
+      display: block;
+      margin-top: 5px;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      margin: 5px 0;
+    }
+    input {
+      width: calc(100% - 100px);
+      margin-right: 10px;
+    }
+    button {
+      width: 80px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Container for Chat List and Chat Box -->
+  <div id="container">
+    <!-- Chat List -->
+    <div id="chatList">
+      <h2>Chats</h2>
+      <ul id="chatListItems"></ul>
+    </div>
+
+    <!-- Chat Box -->
+    <div id="chatBox">
+      <!-- Online Users -->
+      <div id="onlineUsers">
+        <h2>Online Users:</h2>
+        <ul id="userList"></ul>
+      </div>
+    
+      <h1>Chatbox</h1>
+      <div id="messages"></div>
+    
+      <input type="text" id="messageInput" placeholder="Type your message here" />
+      <button id="sendButton">Send</button>
+    </div>
+  </div>
+
+  <script>
+    const url = 'http://localhost:3000/';
+    const socket = io(url);
+    let chatList = [];
+
+    const loadChatList = async () => {
+      fetch(url + 'loadChatList', {
+        method: 'POST',
+        body: JSON.stringify({ chatListLength: chatList.length }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => response.json())
+      .then(response => {
+        if(response.length !== 0) {
+          chatList = response;
+          console.log(JSON.stringify(response)); // THIS LOGS A NESTED ARRAY
+        }
+      })
+      .catch(error => console.log(error));
+    }
+
+    socket.on('connected', async () => {
+      await loadChatList();
+      console.log('connected');
+    });
+
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,17 @@
+.no-track::-webkit-scrollbar-track {
+    background-color: transparent;
+    border: transparent;
+    outline: transparent;
+}
+
+.no-track::-webkit-scrollbar {
+    background-color: transparent;
+    border: transparent;
+    outline: transparent;
+    width: 5px;
+}
+
+.no-track::-webkit-scrollbar-thumb {
+    background-color: gray;
+    border-radius: 5px;
+}

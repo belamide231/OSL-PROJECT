@@ -1,0 +1,44 @@
+.chat-widget {
+  z-index: 50;
+}
+
+.chat-window {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  transform: translateY(100%);
+  opacity: 0;
+}
+.clip-bottom-right {
+  position: relative;
+  clip-path: polygon(0 0, 100% 0, 100% 90%, 90% 100%, 0 100%);
+}
+
+.clip-bottom-left {
+  position: relative;
+  clip-path: polygon(10% 100%, 0 90%, 0 0, 100% 0, 100% 100%);
+}
+
+.message {
+  position: relative;
+}
+
+.message::after {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+}
+
+.message.text-right::after {
+  right: 0;
+  bottom: 0;
+  border-width: 10px 10px 0 0;
+  border-color: #e0e0e0 transparent transparent transparent; /* Adjust color to match bubble */
+}
+
+.message.text-left::after {
+  left: 0;
+  bottom: 0;
+  border-width: 10px 0 0 10px;
+  border-color: #6b7280 transparent transparent transparent; /* Adjust color to match bubble */
+}

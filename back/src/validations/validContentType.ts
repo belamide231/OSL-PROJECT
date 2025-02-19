@@ -1,0 +1,1 @@
+export const validContentType = ['file', 'text'];

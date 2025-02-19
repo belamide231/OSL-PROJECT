@@ -1,0 +1,1 @@
+export const dns = "http://localhost:3000/";

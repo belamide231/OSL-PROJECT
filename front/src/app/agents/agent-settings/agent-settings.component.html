@@ -1,0 +1,55 @@
+<div class="flex bg-secondary">
+    <!-- Sidebar -->
+    <app-a-sidebar></app-a-sidebar>
+  
+    <!-- Main Settings Content -->
+    <div class="h-screen container mx-auto bg-secondary p-6 overflow-y-auto">
+      <!-- Settings Header -->
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-primary">Agent Settings</h1>
+      </div>
+  
+      <!-- Settings Sections -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
+        <!-- Font Settings -->
+        <div class="bg-whites p-6 ring-1 ring-black rounded-lg shadow-lg">
+          <h2 class="text-lg font-semibold text-primary mb-4">Font Settings</h2>
+          <label class="block text-primary">Select Font Style:</label>
+          <select title="select" class="w-full p-2 border rounded-lg">
+            <option>Default</option>
+            <option>Sans-serif</option>
+            <option>Serif</option>
+            <option>Monospace</option>
+          </select>
+        </div>
+  
+        <!-- Notification Sounds -->
+        <div class="bg-whites p-6 ring-1 ring-black rounded-lg shadow-lg">
+          <h2 class="text-lg font-semibold text-primary mb-4">Notification Sounds</h2>
+          <label class="block text-primary">Choose Message Alert Sound:</label>
+          <select title="select" class="w-full p-2 border rounded-lg">
+            <option>Default</option>
+            <option>Chime</option>
+            <option>Beep</option>
+            <option>Ping</option>
+          </select>
+          <button class="mt-2 bg-accent text-white px-4 py-2 rounded-lg shadow-md">Test Sound</button>
+        </div>
+  
+        <!-- Theme Settings -->
+        <div class="bg-whites p-6 ring-1 ring-black rounded-lg shadow-lg">
+          <h2 class="text-lg font-semibold text-primary mb-4">Theme Settings</h2>
+          <label class="block text-primary">Select Theme:</label>
+          <select title="select" class="w-full p-2 border rounded-lg">
+            <option>Light Mode</option>
+            <option>Dark Mode</option>
+          </select>
+        </div>
+  
+        <!-- Save Button -->
+        <div class="col-span-2 flex justify-end">
+          <button class="bg-primary text-white px-6 py-3 rounded-lg shadow-md">Save Settings</button>
+        </div>
+      </div>
+    </div>
+</div>

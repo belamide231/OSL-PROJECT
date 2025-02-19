@@ -1,0 +1,58 @@
+<div class="flex bg-secondary">
+    <!-- Sidebar -->
+    <app-a-sidebar></app-a-sidebar>
+  
+    <!-- Main Notifications Content -->
+    <div class="h-screen container mx-auto bg-secondary p-6 overflow-y-auto">
+      <!-- Notifications Header -->
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-primary">Agent Notifications</h1>
+        <button class="bg-accent text-white px-4 py-2 rounded-lg shadow-md">Refresh</button>
+      </div>
+  
+      <!-- Filter & Search -->
+      <div class="flex justify-between mb-4">
+        <input type="text" placeholder="Search notifications..." class="p-2 border rounded-lg w-3/4">
+        <select title="select" class="p-2 border rounded-lg w-1/4">
+          <option>All</option>
+          <option>Urgent</option>
+          <option>System Updates</option>
+          <option>Reminders</option>
+        </select>
+      </div>
+  
+      <!-- Notifications List -->
+      <div class="bg-whites ring-1 ring-black p-6 rounded-lg shadow-lg overflow-auto">
+        <table class="w-full border-collapse">
+          <thead>
+            <tr class="bg-accent text-white">
+              <th class="p-3 text-left">Type</th>
+              <th class="p-3 text-left">Message</th>
+              <th class="p-3 text-left">Time</th>
+              <th class="p-3 text-left">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b">
+              <td class="p-3">Urgent</td>
+              <td class="p-3">New high-priority chat from John Doe</td>
+              <td class="p-3">2 mins ago</td>
+              <td class="p-3 flex gap-2">
+                <button class="bg-primary text-white px-3 py-1 rounded">Mark as Read</button>
+                <button class="bg-accent text-white px-3 py-1 rounded">Delete</button>
+              </td>
+            </tr>
+            <tr class="border-b">
+              <td class="p-3">System Update</td>
+              <td class="p-3">Scheduled maintenance at 3 AM</td>
+              <td class="p-3">1 hour ago</td>
+              <td class="p-3 flex gap-2">
+                <button class="bg-primary text-white px-3 py-1 rounded">Mark as Read</button>
+                <button class="bg-accent text-white px-3 py-1 rounded">Delete</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+</div>

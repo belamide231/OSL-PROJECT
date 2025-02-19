@@ -1,0 +1,29 @@
+<div class="flex bg-secondary h-screen">
+    <!-- Sidebar -->
+    <app-a-sidebar></app-a-sidebar>
+  
+    <!-- Contacts Section -->
+    <div class="flex-1 p-6 bg-secondary overflow-y-auto">
+      <div class="flex justify-between items-center mb-4">
+        <h1 class="text-2xl font-bold text-primary">Contacts</h1>
+        <input
+          type="text"
+          placeholder="Search contacts..."
+          class="p-2 rounded-lg border border-gray-300 text-primary"
+          (input)="filterContacts($event)"
+        />
+      </div>
+  
+      <!-- Contact List -->
+      <div *ngFor="let contact of filteredContacts" 
+           class="flex items-center p-4 bg-whites ring-1 ring-black rounded-lg shadow-lg mb-2 cursor-pointer hover:bg-gray-100 transition"
+           (click)="openChat(contact)">
+        <img [src]="contact.avatar" alt="Avatar" class="w-12 h-12 rounded-full">
+        <div class="ml-4">
+          <p class="text-lg font-semibold text-primary">{{ contact.name }}</p>
+          <p class="text-sm text-gray-500">{{ contact.status }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  

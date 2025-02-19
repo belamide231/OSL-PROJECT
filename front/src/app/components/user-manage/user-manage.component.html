@@ -1,0 +1,111 @@
+<section class="flex">
+    <app-sidebar></app-sidebar>
+
+<section class="p-6 bg-secondary container mx-auto text-primary h-screen overflow-y-auto">
+    <div class="h-screen w-full absolute bg-secondary bg-opacity-90 z-0"></div>
+    <div class="relative z-10 max-w-7xl mx-auto p-6">
+      <header class="flex justify-between items-center mb-6">
+        <h1 class="text-4xl text-primary font-bold">User Management</h1>
+        <button
+          class="bg-accent text-white py-2 px-4 rounded-md"
+          (click)="openInviteModal()"
+        >
+          Invite Agent
+        </button>
+      </header>
+  
+      <div class="bg-secondary rounded-2xl shadow p-6">
+        <table class="w-full text-primary text-left border-collapse">
+          <thead class="bg-secondary text-primary">
+            <tr>
+              <th class="px-4 py-2">Agent Name</th>
+              <th class="px-4 py-2">Email</th>
+              <th class="px-4 py-2">Phone</th>
+              <th class="px-4 py-2">Company</th>
+              <th class="px-4 py-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let agent of agents"
+              class="even:bg-secondary odd:bg-secondary/10"
+            >
+              <td class="px-4 py-2">{{ agent.name }}</td>
+              <td class="px-4 py-2">{{ agent.email }}</td>
+              <td class="px-4 py-2">{{ agent.phone }}</td>
+              <td class="px-4 py-2">{{ agent.company }}</td>
+              <td class=" flex gap-2 px-4 py-2">
+                <button class="bg-accent text-white py-1 px-3 rounded-md">
+                  Edit
+                </button>
+                <button class="bg-red-600 text-white py-1 px-3 rounded-md">
+                  Delete
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+</section>
+
+    <!-- Invite Modal -->
+    <div *ngIf="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white w-full max-w-lg rounded-lg shadow p-6">
+        <header class="flex justify-between items-center mb-4">
+          <h2 class="text-2xl text-primary font-bold">Invite Agent</h2>
+          <button class="text-red-600" (click)="closeModal()">✕</button>
+        </header>
+        <form (ngSubmit)="sendInvitation()">
+          <div class="space-y-4">
+            <div>
+              <label for="company" class="block text-sm font-medium text-primary">Company</label>
+              <select id="company" [(ngModel)]="newAgent.company" name="company" required class="w-full mt-1 px-3 py-2 border rounded-md">
+                <option value="Ibcauto">Ibcauto</option>
+                <option value="Jet">Jet</option>
+                <option value="Gis">Gis</option>
+              </select>
+            </div>
+            <div>
+              <label for="name" class="block text-sm font-medium text-primary">Agent Name</label>
+              <input
+                type="text"
+                id="name"
+                [(ngModel)]="newAgent.name"
+                name="name"
+                required
+                class="w-full mt-1 px-3 py-2 border rounded-md"
+              />
+            </div>
+            <div>
+              <label for="email" class="block text-sm font-medium text-primary">Email</label>
+              <input
+                type="email"
+                id="email"
+                [(ngModel)]="newAgent.email"
+                name="email"
+                required
+                class="w-full mt-1 px-3 py-2 border rounded-md"
+              />
+            </div>
+            <div>
+              <label for="phone" class="block text-sm font-medium text-primary">Phone</label>
+              <input
+                type="tel"
+                id="phone"
+                [(ngModel)]="newAgent.phone"
+                name="phone"
+                required
+                class="w-full mt-1 px-3 py-2 border rounded-md"
+              />
+            </div>
+          </div>
+          <div class="mt-6 flex gap-2 justify-end">
+            <button type="button" class="bg-gray-300 text-primary py-2 px-4 rounded-md mr-2" (click)="closeModal()">Cancel</button>
+            <button type="submit" class="bg-accent text-white py-2 px-4 rounded-md">Send Invite</button>
+          </div>
+        </form>
+      </div>
+    </div>
+ 
+  

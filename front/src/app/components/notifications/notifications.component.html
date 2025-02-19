@@ -1,0 +1,40 @@
+<div class="flex bg-secondary">
+    <app-sidebar></app-sidebar>
+  
+    <div class="p-6 bg-secondary container mx-auto text-white h-screen overflow-y-auto">
+      <!-- Header -->
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl text-primary font-bold">Notifications</h1>
+        <button class="bg-accent text-white px-4 py-2 rounded-lg shadow hover:bg-yellow-600">
+          Clear All
+        </button>
+      </div>
+  
+      <!-- Notifications List -->
+      <div class="bg-secondary p-6 rounded-lg shadow-2xl">
+        <ul>
+          <!-- Notification Item 1 -->
+          <li class="border-b border-slate-800 py-4 flex justify-between">
+            <p class="text-primary">New message from <strong>John Doe</strong>.</p>
+            <span class="text-sm text-accent">2 minutes ago</span>
+          </li>
+          <!-- Notification Item 2 -->
+          <li class="border-b border-slate-800 py-4 flex justify-between">
+            <p class="text-primary">Report by Alice <strong>URGENT</strong>.</p>
+            <span class="text-sm text-accent">1 hour ago</span>
+          </li>
+          <!-- Notification Item 3 -->
+          <li class="border-b border-slate-800 py-4 flex justify-between">
+            <p class="text-primary">New user <strong>Alice Smith</strong> joined your team.</p>
+            <span class="text-sm text-accent">Yesterday</span>
+          </li>
+          <!-- Notification Item 4 -->
+          <li class="py-4 flex justify-between">
+            <p class="text-primary">Support ticket <strong>#1234</strong> has been resolved.</p>
+            <span class="text-sm text-accent">2 days ago</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  

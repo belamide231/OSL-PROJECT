@@ -1,0 +1,83 @@
+<div class="flex bg-secondary">
+    <app-sidebar></app-sidebar>
+
+<div class="p-6 bg-secondary container mx-auto text-primary h-screen overflow-y-auto">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold">Contact</h1>
+      <button class="bg-accent text-white px-4 py-2 rounded-lg shadow hover:bg-accent">
+        Add New Contact
+      </button>
+    </div>
+  
+    <!-- Search Bar -->
+    <div class="mb-6">
+      <input
+        type="text"
+        placeholder="Search users..."
+        class="w-full p-3 rounded-lg bg-primary text-white placeholder-gray-400"
+      />
+    </div>
+  
+    <!-- Users Table -->
+    <div class="bg-secondary p-6 rounded-lg shadow-2xl">
+      <table class="w-full text-left">
+        <thead>
+          <tr class="text-primary">
+            <th class="py-3 px-4">#</th>
+            <th class="py-3 px-4">Name</th>
+            <th class="py-3 px-4">Email</th>
+            <th class="py-3 px-4">Role</th>
+            <th class="py-3 px-4">Status</th>
+            <th class="py-3 px-4 text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- User Row 1 -->
+          <tr class="border-t border-slate-800">
+            <td class="py-3 px-4">1</td>
+            <td class="py-3 px-4">John Doe</td>
+            <td class="py-3 px-4">johndoeexampslecom</td>
+            <td class="py-3 px-4">Admin</td>
+            <td class="py-3 px-4">
+              <span class="bg-green-500 text-white px-2 py-1 rounded text-sm">Active</span>
+            </td>
+            <td class="py-3 px-4 gap-4 flex justify-center text-center">
+              <button class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600">Message</button>
+              <button class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">Remove</button>
+            </td>
+          </tr>
+          <!-- User Row 2 -->
+          <tr class="border-t border-slate-800">
+            <td class="py-3 px-4">2</td>
+            <td class="py-3 px-4">Alice Smith</td>
+            <td class="py-3 px-4">alice.smithexample.com</td>
+            <td class="py-3 px-4">User</td>
+            <td class="py-3 px-4">
+              <span class="bg-yellow-500 text-white px-2 py-1 rounded text-sm">Pending</span>
+            </td>
+            <td class="py-3 px-4 gap-4 flex justify-center text-center">
+              <button class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600">Message</button>
+              <button class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">Remove</button>
+            </td>
+          </tr>
+          <!-- User Row 3 -->
+          <tr class="border-t border-slate-800">
+            <td class="py-3 px-4">3</td>
+            <td class="py-3 px-4">Michael Brown</td>
+            <td class="py-3 px-4">michael.brownexample.com</td>
+            <td class="py-3 px-4">Support</td>
+            <td class="py-3 px-4">
+              <span class="bg-red-500 text-white px-2 py-1 rounded text-sm">Inactive</span>
+            </td>
+            <td class="py-3 px-4 gap-4 flex justify-center text-center">
+              <button class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600">Message</button>
+              <button class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">Remove</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+  

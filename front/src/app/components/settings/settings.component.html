@@ -1,0 +1,247 @@
+<div class="flex bg-secondary">
+  <app-sidebar></app-sidebar>
+
+  <div class="p-6 bg-secondary container mx-auto text-white h-screen overflow-y-auto">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl text-primary font-bold">Chat Widget Settings</h1>
+      <button class="bg-accent text-white px-4 py-2 rounded-lg shadow">
+        Save Settings
+      </button>
+    </div>
+
+    <!-- Double Column Layout -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Column 1: Chat Widget General Settings -->
+      <div class="bg-secondary p-6 rounded-lg shadow-2xl">
+        <h2 class="text-lg font-semibold text-primary mb-4">General Settings</h2>
+        
+        <!-- Assign Widget to Company -->
+        <div class="mb-6">
+          <label for="assign-company" class="block text-sm text-primary mb-2">Assign Widget to Company</label>
+          <select id="assign-company" class="w-full p-3 rounded-lg bg-primary text-white">
+            <option value="IBC" selected>IBC</option>
+            <option value="Jet">Jet</option>
+            <option value="Gis">Gis</option>
+          </select>
+        </div>
+
+        <!-- Enable Chat Widget -->
+        <div class="mb-6">
+          <label for="enable-widget" class="block text-sm text-primary mb-2">Enable Chat Widget</label>
+          <div class="flex items-center">
+            <input
+              id="enable-widget"
+              type="checkbox"
+              class="w-5 h-5 text-primary bg-accent rounded focus:ring-2"
+              checked
+            />
+            <label for="enable-widget" class="ml-3 text-primary">Turn on to display the chat widget on your site</label>
+          </div>
+        </div>
+
+        <!-- Chat Widget Title -->
+        <div class="mb-6">
+          <label for="widget-title" class="block text-sm text-primary mb-2">Widget Title</label>
+          <input
+            id="widget-title"
+            type="text"
+            class="w-full p-3 rounded-lg bg-primary text-white"
+            value="Customer Support"
+          />
+        </div>
+
+        <!-- Chat Widget Color -->
+        <div class="mb-6">
+          <label for="widget-color" class="block text-sm text-primary mb-2">Widget Color</label>
+          <input
+            id="widget-color"
+            type="color"
+            class="w-16 h-16 p-0 rounded-lg"
+            value="#FD0101"
+          />
+        </div>
+
+        <!-- Chat Widget Embed Code -->
+        <div class="mb-6">
+          <label for="widget-embed-code" class="block text-sm text-primary mb-2">Embed Code</label>
+          <textarea
+            id="widget-embed-code"
+            class="w-full p-3 rounded-lg bg-primary text-white"
+            rows="4"
+            readonly
+          >
+            <!-- Hardcoded Embed Code for your chat widget -->
+            <script type="text/javascript">
+              var widget = widget || {};
+              widget.widgetId = 'your-widget-id';
+              widget.loadStart = new Date();
+              (function() {
+                var s1 = document.createElement("script"), s0 = document.getElementsByTagName("script")[0];
+                s1.async = true;
+                s1.src = 'https://chat-widget.com/embed/widget';
+                s1.charset = 'UTF-8';
+                s0.parentNode.insertBefore(s1, s0);
+              })();
+            </script>
+          </textarea>
+          <p class="text-xs mt-2 text-primary">Copy the above code and paste it into the HTML of your website to display the chat widget.</p>
+        </div>
+      </div>
+
+      <!-- Column 2: Advanced Chat Settings -->
+      <div class="bg-secondary p-6 rounded-lg shadow-2xl">
+        <h2 class="text-lg font-semibold text-primary mb-4">Advanced Settings</h2>
+
+        <!-- Set Widget Position -->
+        <div class="mb-6">
+          <label for="widget-position" class="block text-sm text-primary mb-2">Widget Position</label>
+          <select id="widget-position" class="w-full p-3 rounded-lg bg-primary text-white">
+            <option value="bottom-right" selected>Bottom Right</option>
+            <option value="bottom-left">Bottom Left</option>
+            <option value="top-right">Top Right</option>
+            <option value="top-left">Top Left</option>
+          </select>
+        </div>
+
+        <!-- Set Welcome Message -->
+        <div class="mb-6">
+          <label for="welcome-message" class="block text-sm text-primary mb-2">Welcome Message</label>
+          <input
+            id="welcome-message"
+            type="text"
+            class="w-full p-3 rounded-lg bg-primary text-white"
+            value="How can we assist you today?"
+          />
+        </div>
+
+        <!-- Auto Start Chat -->
+        <div class="mb-6">
+          <label for="auto-start-chat" class="block text-sm text-primary mb-2">Auto Start Chat</label>
+          <div class="flex items-center">
+            <input
+              id="auto-start-chat"
+              type="checkbox"
+              class="w-5 h-5 text-primary bg-accent rounded focus:ring-2"
+            />
+            <label for="auto-start-chat" class="ml-3 text-primary">Start the chat widget automatically after 5 seconds</label>
+          </div>
+        </div>
+
+        <!-- Auto Close Chat -->
+        <div class="mb-6">
+          <label for="auto-close-chat" class="block text-sm text-primary mb-2">Auto Close Chat</label>
+          <div class="flex items-center">
+            <input
+              id="auto-close-chat"
+              type="checkbox"
+              class="w-5 h-5 text-primary bg-accent rounded focus:ring-2"
+            />
+            <label for="auto-close-chat" class="ml-3 text-primary">Automatically close the chat after 15 minutes of inactivity</label>
+          </div>
+        </div>
+      </div>
+    </div>
+         <!-- Double Column Layout -->
+         <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Column 1: General Settings -->
+          <div class="bg-secondary p-6 rounded-lg shadow-2xl">
+            <h2 class="text-lg font-semibold text-primary mb-4">Notifications Settings</h2>
+            <!-- Notifications -->
+            <div class="mb-6">
+              <label for="notifications" class="block text-sm text-primary mb-2">Enable Notifications</label>
+              <div class="flex items-center">
+                <input
+                  id="notifications"
+                  type="checkbox"
+                  class="w-5 h-5 text-primary bg-accent rounded focus:ring-2"
+                  checked
+                />
+                <label for="notifications" class="ml-3 text-primary">Turn on to receive alerts for new messages</label>
+              </div>
+            </div>
+            <!-- Default Font Size -->
+            <div class="mb-6">
+              <label for="font-size" class="block text-sm text-primary mb-2">Font Size</label>
+              <select id="font-size" class="w-full p-3 rounded-lg bg-primary text-white">
+                <option value="small">Small</option>
+                <option value="medium" selected>Medium</option>
+                <option value="large">Large</option>
+              </select>
+            </div>
+            <!-- Message Sound -->
+            <div class="mb-6">
+              <label for="message-sound" class="block text-sm text-primary mb-2">Message Sound</label>
+              <select id="message-sound" class="w-full p-3 rounded-lg bg-primary text-white">
+                <option value="ding">Ding</option>
+                <option value="pop" selected>Pop</option>
+                <option value="chime">Chime</option>
+              </select>
+            </div>
+          </div>
+    
+          <!-- Column 2: Advanced Settings -->
+          <div class="bg-secondary p-6 rounded-lg shadow-2xl">
+            <!-- Chat History -->
+            <div class="mb-6">
+              <label for="chat-history" class="block text-sm text-primary mb-2">Chat History Retention</label>
+              <select id="chat-history" class="w-full p-3 rounded-lg bg-primary text-white">
+                <option value="7-days">7 Days</option>
+                <option value="30-days" selected>30 Days</option>
+                <option value="forever">Forever</option>
+              </select>
+            </div>
+            <!-- Typing Indicator -->
+            <div class="mb-6">
+              <label for="typing-indicator" class="block text-sm text-primary mb-2">Show Typing Indicator</label>
+              <div class="flex items-center">
+                <input
+                  id="typing-indicator"
+                  type="checkbox"
+                  class="w-5 h-5 text-yellow-500 bg-slate-800 rounded focus:ring-yellow-500 focus:ring-2"
+                  checked
+                />
+                <label for="typing-indicator" class="ml-3 text-primary">Display when others are typing</label>
+              </div>
+            </div>
+            <!-- Message Read Receipts -->
+            <div class="mb-6">
+              <label for="read-receipts" class="block text-sm text-primary mb-2">Enable Read Receipts</label>
+              <div class="flex items-center">
+                <input
+                  id="read-receipts"
+                  type="checkbox"
+                  class="w-5 h-5 text-yellow-500 bg-slate-800 rounded focus:ring-yellow-500 focus:ring-2"
+                  checked
+                />
+                <label for="read-receipts" class="ml-3 text-primary">Show when messages are read</label>
+              </div>
+            </div>
+            <!-- End-to-End Encryption -->
+            <div class="mb-6">
+              <label for="encryption" class="block text-sm text-primary mb-2">End-to-End Encryption</label>
+              <div class="flex items-center">
+                <input
+                  id="encryption"
+                  type="checkbox"
+                  class="w-5 h-5 text-yellow-500 bg-slate-800 rounded focus:ring-yellow-500 focus:ring-2"
+                  checked
+                />
+                <label for="encryption" class="ml-3 text-primary">Enable secure chat encryption</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+
+    <!-- Footer -->
+    <div class="mt-8 text-center text-primary">
+      <p class="text-sm">
+        Need help? <a href="/support" class="text-accent hover:underline">Contact Support</a>
+      </p>
+      <p class="text-sm mt-2">
+        Learn more about this widget <a href="https://your-site.com" class="text-accent hover:underline">here</a>.
+      </p>
+    </div>
+  </div>
+</div>

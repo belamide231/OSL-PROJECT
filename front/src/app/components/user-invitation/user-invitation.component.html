@@ -1,0 +1,137 @@
+
+<div class="flex bg-secondary h-screen items-center justify-center">
+    <div class="bg-primary p-8 rounded-lg shadow-lg w-full max-w-lg text-primary">
+      <h1 class="text-2xl font-bold mb-6 text-center">Agent Invitation</h1>
+      
+  
+      <!-- Step 1 -->
+      <form *ngIf="step === 1" (ngSubmit)="goToNextStep()" class="space-y-6">
+          
+        <!-- Company Field (Pre-filled) -->
+        <div>
+            <label for="company" class="block text-sm font-medium">Company</label>
+            <input
+              type="text"
+              id="company"
+              [(ngModel)]="company"
+              name="company"
+              readonly
+              class="w-full mt-1 px-3 py-2 rounded-md bg-secondary border border-gray-500 focus:outline-none"
+            />
+          </div>
+    
+        <!-- First Name -->
+        <div>
+          <label for="firstName" class="block text-sm font-medium">First Name</label>
+          <input
+            type="text"
+            id="firstName"
+            [(ngModel)]="firstName"
+            name="firstName"
+            required
+            class="w-full mt-1 px-3 py-2 rounded-md bg-secondary border border-gray-500 focus:outline-none"
+          />
+        </div>
+  
+        <!-- Last Name -->
+        <div>
+          <label for="lastName" class="block text-sm font-medium">Last Name</label>
+          <input
+            type="text"
+            id="lastName"
+            [(ngModel)]="lastName"
+            name="lastName"
+            required
+            class="w-full mt-1 px-3 py-2 rounded-md bg-secondary border border-gray-500 focus:outline-none"
+          />
+        </div>
+  
+        <!-- Middle Initial -->
+        <div>
+          <label for="middleInitial" class="block text-sm font-medium">Middle Initial</label>
+          <input
+            type="text"
+            id="middleInitial"
+            [(ngModel)]="middleInitial"
+            name="middleInitial"
+            maxlength="1"
+            class="w-full mt-1 px-3 py-2 rounded-md bg-secondary border border-gray-500 focus:outline-none"
+          />
+        </div>
+  
+        <!-- Password -->
+        <div>
+          <label for="password" class="block text-sm font-medium">Password</label>
+          <input
+            type="password"
+            id="password"
+            [(ngModel)]="password"
+            name="password"
+            required
+            minlength="6"
+            class="w-full mt-1 px-3 py-2 rounded-md bg-secondary border border-gray-500 focus:outline-none"
+          />
+        </div>
+  
+        <!-- Next Button -->
+        <div class="text-center">
+          <button
+            type="submit"
+            class="bg-accent text-primary px-4 py-2 rounded-lg shadow hover:bg-accent"
+          >
+            Next
+          </button>
+        </div>
+      </form>
+  
+      <!-- Step 2 -->
+      <form *ngIf="step === 2" (ngSubmit)="submitForm()" class=" bg-accent space-y-6">
+        <!-- Address -->
+        <div>
+          <label for="address" class="block text-sm font-medium">Address</label>
+          <input
+            id="address"
+            [(ngModel)]="address"
+            name="address"
+            required
+            rows="3"
+            class="w-full mt-1 px-3 py-2 rounded-md bg-secondary border border-gray-500 focus:outline-none"
+          >
+        </div>
+  
+        <!-- Contact Number -->
+        <div>
+          <label for="contactNumber" class="block text-sm font-medium">Contact Number</label>
+          <input
+            type="tel"
+            id="contactNumber"
+            [(ngModel)]="contactNumber"
+            name="contactNumber"
+            required
+            pattern="[0-9]{10,15}"
+            class="w-full mt-1 px-3 py-2 rounded-md bg-secondary border border-gray-500 focus:outline-none"
+          />
+        </div>
+  
+        <!-- Back and Submit Buttons -->
+        <div class="flex justify-between">
+          <button
+            type="button"
+            (click)="goToPreviousStep()"
+            class="bg-accent text-primary px-4 py-2 rounded-lg shadow hover:bg-accent"
+          >
+            Back
+          </button>
+          <button
+            type="submit"
+            class="bg-accent text-primary px-4 py-2 rounded-lg shadow hover:bg-accent"
+          >
+            Submit
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+
+      
