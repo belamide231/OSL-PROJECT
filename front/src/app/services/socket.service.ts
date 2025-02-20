@@ -75,7 +75,7 @@ export class SocketService {
         previousChatlist.unshift(updatedChat);
         this._chatList.next(previousChatlist);
 
-        this.messageDelivered([res.chatmate_id]);
+        this.messageDelivered();
       });
     });
 
@@ -177,9 +177,9 @@ export class SocketService {
   }
 
 
-  public messageDelivered = (chatmatesId: number[]) => {
+  public messageDelivered = () => {
 
-    this.socket.emit("message delivered", chatmatesId);
+    this.socket.emit("message delivered");
   }
 
 
@@ -207,7 +207,7 @@ export class SocketService {
       if(isFinite(res)) 
         return alert('Something went wrong with your internet');
 
-      this.messageDelivered(res.order);
+      this.messageDelivered();
       this._chatList.next(res.chatList);
 
       const targetMessage = this._chatList.value[this._chatList.value.findIndex(x => x[0].chatmate_id === this.chatmateId)][0];

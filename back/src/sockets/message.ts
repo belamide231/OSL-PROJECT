@@ -16,14 +16,15 @@ export const seenChat = async (user: socketUser, data: any): Promise<void> => {
 }
 
 
-export const messageDelivered = async (user: socketUser, chatmatesId: number[]): Promise<void> => {
-    const result = await deliveredChatService(user.id, chatmatesId) as any;
+export const messageDelivered = async (user: socketUser): Promise<void> => {
+    const result = await deliveredChatService(user.id) as any;
     if(isFinite(result)) return;
     
-    let connections: string[] = [];
-    chatmatesId.forEach((x) => connections = connections.concat(socketClients.clientConnections[x]));
+    if(result[1].length === 0) return;
     
-    connections.length !== 0 && io.to(connections).emit('message delivered', { chatmateId: user.id, stamp: result.stamp });
+    let connections: string[] = [];
+    result[1].forEach((x: any) => connections = connections.concat(socketClients.clientConnections[x.chatmate_id]));
+    connections.length !== 0 && io.to(connections).emit('message delivered', { chatmateId: user.id, stamp: result[0][0].stamp });
 }
 
 

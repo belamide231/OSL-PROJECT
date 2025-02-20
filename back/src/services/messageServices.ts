@@ -126,13 +126,13 @@ export const loadMessagesService = async (userId: number, data: getConversationD
 }
 
 
-export const deliveredChatService = async (userId: number, chatmatesId: number[]): Promise<number | object> => {
+export const deliveredChatService = async (userId: number): Promise<any> => {
     if(!deliveredChatService)
         return 422;
 
     try {
 
-        const result = (await mysql.promise().query("CALL chat_delivered(?, ?)", [userId, chatmatesId.toString()]) as any)[0][0][0];
+        const result = (await mysql.promise().query("CALL chat_delivered(?)", [userId]) as any)[0].slice(0, 2);
         return result;
 
     } catch (err) {
