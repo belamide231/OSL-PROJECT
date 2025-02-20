@@ -1,7 +1,7 @@
 import { createClient, RedisClientType } from 'redis';
 import dotenv from 'dotenv';
 import path from 'path';
-import fs from 'fs';
+import fs, { readFileSync } from 'fs';
 
 
 dotenv.config();
@@ -24,18 +24,8 @@ export class getRedisConnection {
 
         try {
 
-            const scriptPath = path.join(__dirname, '../../scripts');
-            const getMessageScript = fs.readFileSync(path.join(scriptPath, 'getMessages.lua'), 'utf-8') as string;
-
             await this.con.connect();
-            await this.con.sendCommand(['FUNCTION', 'LOAD', 'REPLACE', getMessageScript]);
-
-            const result = await this.con.sendCommand(['FCALL', 'getMessages', '0', '1', '3']) as any;
-            const found = result[0];
-            const messages = result[1].map((x: string) => JSON.parse(x));
-
-            console.log(messages);
-
+            await this.functions();
             console.log(`CONNECTED TO REDIS ${process.env.CLOUD_BASE ? 'CLOUD' : 'LOCAL'}`);
 
         } catch (error) {
@@ -44,5 +34,35 @@ export class getRedisConnection {
             console.log(error);
             process.exit();
         }
+    }
+
+    private directory(file: string): string {
+        const directory = path.join(__dirname, `../../scripts/${file}.lua`);
+        return readFileSync(directory, 'utf-8');
+    }
+
+    private async functions() {
+
+        // const data = [
+        //     { content: 'HELLO WORLD!', senderId: 3, receiverId: 2 },
+        //     { content: 'GOOD LUCK!', senderId: 1, receiverId: 3 },
+        //     { content: 'CONGRATULATIONS!', senderId: 2, receiverId: 1 },
+        //     { content: 'HAPPY BIRTDAY!', senderId: 1, receiverId: 2 },
+        //     { content: 'LOVE YOURSELF!', senderId: 2, receiverId: 3 },
+        //     { content: 'WEEKENDS!', senderId: 4, receiverId: 1 },
+        //     { content: 'MERRY CHRISTMAS!', senderId: 1, receiverId: 2 },
+        // ]
+
+        // const stamp = new Date();
+        // console.log(stamp);
+        // console.log(`${stamp.getHours()}:${stamp.getMinutes()}`);
+    
+        await this.con.sendCommand(['FUNCTION', 'LOAD', 'REPLACE', this.directory('setMessageScript')]);
+        // data.forEach(async (x: any) => await this.con.sendCommand(['FCALL', 'setMessage', '0', x.senderId.toString(), x.receiverId.toString(), JSON.stringify(x)]));
+
+        await this.con.sendCommand(['FUNCTION', 'LOAD', 'REPLACE', this.directory('getMessageScript')]);
+        // const result = await this.con.sendCommand(['FCALL', 'getMessage', '0', '1']) as any;
+        // const object = result.map((x: any) => x.map((x: any) => JSON.parse(x)));
+        // console.log(object);
     }
 }

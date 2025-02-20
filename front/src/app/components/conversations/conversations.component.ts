@@ -89,8 +89,8 @@ export class ConversationComponent implements AfterViewInit {
   }
 
   public getStatusAndStamp = (object: any): any => {
-    if(object.status === 'sending') return 'sending';
 
+    if(object.status === 'sending') return 'sending';
     if(object.content_status === 'sent') return `${object.content_status} at ${this.getDate(object.sent_at)}`;
     if(object.content_status === 'delivered') return `${object.content_status} at ${this.getDate(object.delivered_at)}`;
     if(object.content_status === 'seen') return `${object.content_status} at ${this.getDate(object.seen_at)}`;
@@ -206,24 +206,25 @@ export class ConversationComponent implements AfterViewInit {
     });
 
 
-    return [...modified].reverse() as any;
+    return modified as any;
   }
 
 
   getDate = (sentAt: string) => {
-    const current = new Date();
+
     const stamp = new Date(sentAt);
+    const current = new Date();
     const daysInWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const monthsInYears = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const time = `${stamp.getHours() === 0 ? '12': stamp.getHours() > 12 ? stamp.getHours() % 12 : stamp.getHours()}:${stamp.getMinutes() < 10 ? `0${stamp.getMinutes()}` : stamp.getMinutes() } ${stamp.getHours() > 12 ? 'PM': 'AM'}`;
 
     if(stamp.getDate() === current.getDate() && stamp.getMonth() === current.getMonth() && stamp.getFullYear() === current.getFullYear()) 
       return time;
-    if(stamp.getDate() === current.getDate()-1 && stamp.getMonth() === current.getMonth() && stamp.getFullYear() === current.getFullYear()) 
+    if(stamp.getDate() === (current.getDate() - 1) && stamp.getMonth() === current.getMonth() && stamp.getFullYear() === current.getFullYear()) 
       return `Yesterday ${time}`;
     if(stamp.getTime() < (current.getTime() - 2 * 24 * 60 * 60 * 1000) && stamp.getTime() > (current.getTime() - 7 * 24 * 60 * 60 * 1000) && stamp.getMonth() === current.getMonth() && stamp.getFullYear() === current.getFullYear())
       return `${daysInWeek[stamp.getDay()]} ${time}`;
-    if(stamp.getMonth() !== current.getMonth() && stamp.getFullYear() === stamp.getFullYear())
+    if((stamp.getMonth() !== current.getMonth() || stamp.getMonth() === current.getMonth()) && stamp.getFullYear() === stamp.getFullYear())
       return `${monthsInYears[stamp.getMonth()]} ${stamp.getDate()}, ${time}`;
     if(stamp.getFullYear() !== current.getFullYear())
       return `${monthsInYears[stamp.getMonth()]} ${stamp.getDate()}, ${stamp.getFullYear()}, ${time}`;
