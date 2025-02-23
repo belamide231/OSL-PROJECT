@@ -35,6 +35,7 @@ CREATE TABLE tbl_messages (
     id INT PRIMARY KEY AUTO_INCREMENT,
     sent_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     seen_at DATETIME DEFAULT NULL,
+    delivered_at DATETIME DEFAULT NULL,
     content_type VARCHAR(10),
     content VARCHAR(7999),
     sender_id INT,
@@ -45,7 +46,8 @@ CREATE TABLE tbl_messages (
     FOREIGN KEY(receiver_id) REFERENCES tbl_users(id),
     INDEX idx_sent_at(sent_at),
     INDEX idx_sender_id(sender_id),
-    INDEX idx_receiver_id(receiver_id)
+    INDEX idx_receiver_id(receiver_id),
+    INDEX idx_content_status(content_status)
 );
 
 CREATE TABLE tbl_messages_head (

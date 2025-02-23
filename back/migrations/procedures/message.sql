@@ -11,36 +11,26 @@ END;;
 
 
 
-CREATE PROCEDURE insert_message(IN in_sent_at DATETIME, IN in_content_type VARCHAR(10), IN in_content VARCHAR(7999), IN in_sender_id INT, IN in_receiver_id INT)
+CREATE PROCEDURE insert_message(IN in_message_id INT, IN in_content_status VARCHAR(20), IN in_sent_at DATETIME, IN in_delivered_at DATETIME, IN in_seen_at DATETIME, IN in_company_name VARCHAR(99), IN in_sender_id INT, IN in_receiver_id INT, IN in_content_type VARCHAR(10), IN in_content VARCHAR(7999))
 BEGIN
 
-  DECLARE curr_message_id INT DEFAULT 0;
-  DECLARE curr_sent_at DATETIME;
   DECLARE prev_message_id INT DEFAULT 0;
   DECLARE prev_sent_at DATETIME;
 
-  SET curr_sent_at = COALESCE(in_sent_at, NOW());
-
-  INSERT INTO tbl_messages(sent_at, content_type, content, sender_id, receiver_id) VALUES (curr_sent_at, in_content_type, in_content, in_sender_id, in_receiver_id);
-
-  SELECT LAST_INSERT_ID() INTO curr_message_id;
+  INSERT INTO tbl_messages(id, content_status, sent_at, delivered_at, seen_at, company_name, sender_id, receiver_id, content_type, content) 
+  VALUES (in_message_id, in_content_status, in_sent_at, in_delivered_at, in_seen_at, in_company_name, in_sender_id, in_receiver_id, in_content_type, in_content);
 
   SELECT message_id, sent_at INTO prev_message_id, prev_sent_at
   FROM tbl_messages_head
-  WHERE(sender_id = in_sender_id  AND receiver_id = in_receiver_id)
-  OR(sender_id = in_receiver_id AND receiver_id = in_sender_id);
+  WHERE (sender_id = in_sender_id  AND receiver_id = in_receiver_id)
+  OR (sender_id = in_receiver_id AND receiver_id = in_sender_id);
 
-  SELECT in_receiver_id AS receiver_id, id AS message_id
-  FROM tbl_messages
-  WHERE id = curr_message_id
-  LIMIT 1;
-
-  IF prev_message_id != 0 AND curr_sent_at > prev_sent_at THEN
+  IF prev_message_id != 0 AND in_sent_at >= prev_sent_at THEN
     UPDATE tbl_messages_head
-      SET sent_at = curr_sent_at, message_id = curr_message_id, sender_id = in_sender_id, receiver_id = in_receiver_id
+      SET sent_at = in_sent_at, message_id = in_message_id, sender_id = in_sender_id, receiver_id = in_receiver_id
       WHERE message_id = prev_message_id;
   ELSEIF prev_message_id = 0 THEN
-    INSERT INTO tbl_messages_head(sent_at, message_id, sender_id, receiver_id) VALUES (curr_sent_at, curr_message_id, in_sender_id, in_receiver_id);
+    INSERT INTO tbl_messages_head(sent_at, message_id, sender_id, receiver_id) VALUES (in_sent_at, in_message_id, in_sender_id, in_receiver_id);
   END IF;
 
 END;;

@@ -5,6 +5,9 @@ import { sendMessageDto } from "../dto/messageController/sendMessageDto";
 import { loadChatListDto } from "../dto/messageController/loadChatListDto";
 import { validContentType } from "../validations/validContentType";
 import { validRoles } from "../validations/validRoles";
+import { messageModel } from "../model/messageModel";
+import { setTimer } from "../utilities/queue";
+import { insertMessage } from "../calls/InsertMessage";
 
 
 export const sendMessageService = async (data: sendMessageDto, senderId: number): Promise<number | object> => {
@@ -13,20 +16,46 @@ export const sendMessageService = async (data: sendMessageDto, senderId: number)
 
     try {
 
-        const result = (await mysql.promise().query('CALL insert_message(?, ?, ?, ?, ?)', [null, data.contentType, data.content, senderId, data.receiverId]) as any)[0][0][0];
+        
+        const results = await redis.con.sendCommand(['FCALL', 'set_message', '0', JSON.stringify(new messageModel(senderId, data.receiverId, data.contentType, data.content))]) as any;
+        setTimer(results[1]);
 
         let connections: string[] = [];
         connections = connections.concat(socketClients.clientConnections[senderId]);
         connections = connections.concat(socketClients.clientConnections[data.receiverId!]);
-        io.to(connections).emit('receive message', result.message_id );
+        io.to(connections).emit('receive message', results[0]);
 
         return { uuid: data.uuid };
 
-    } catch {
-        console.log("MYSQL ERROR");
+    } catch (err) {
+
+        console.log(err);
+
+        console.log("REDIS ERROR");
         return 500;
     }
 }
+
+
+export const migrateCachedMessages = async (chatId: string): Promise<void> => {
+
+    const messages = JSON.parse((await redis.con.sendCommand(['FCALL', 'get_chat', '0', chatId]) as any))[0];
+
+    let sql = '';
+    messages.forEach((x: any) => sql += insertMessage(x));
+
+    try {
+
+        await mysql.promise().query(sql);
+        await redis.con.del(chatId);
+
+    } catch (err) {
+
+        console.log(err);
+        console.log("MYSQL ERROR");
+    }
+} 
+
 
 export const getActiveClientsService = async (role: string): Promise<{ status: number, result: object | null }> => {
     if(!validRoles.includes(role))

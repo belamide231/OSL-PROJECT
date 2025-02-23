@@ -11,7 +11,7 @@ END;;
 
 
 
-CREATE PROCEDURE insert_message(IN in_sent_at DATETIME, IN in_content_type VARCHAR(10), IN in_content VARCHAR(7999), IN in_sender_id INT, IN in_receiver_id INT)
+CREATE PROCEDURE insert_message(IN in_message_id INT, IN in_sent_at DATETIME, IN in_content_type VARCHAR(10), IN in_content VARCHAR(7999), IN in_sender_id INT, IN in_receiver_id INT)
 BEGIN
 
   DECLARE curr_message_id INT DEFAULT 0;
@@ -21,14 +21,14 @@ BEGIN
 
   SET curr_sent_at = COALESCE(in_sent_at, NOW());
 
-  INSERT INTO tbl_messages(sent_at, content_type, content, sender_id, receiver_id) VALUES (curr_sent_at, in_content_type, in_content, in_sender_id, in_receiver_id);
+  INSERT INTO tbl_messages(id, sent_at, content_type, content, sender_id, receiver_id) VALUES (in_message_id, curr_sent_at, in_content_type, in_content, in_sender_id, in_receiver_id);
 
-  SELECT LAST_INSERT_ID() INTO curr_message_id;
+  SELECT in_message_id INTO curr_message_id;
 
   SELECT message_id, sent_at INTO prev_message_id, prev_sent_at
   FROM tbl_messages_head
-  WHERE(sender_id = in_sender_id  AND receiver_id = in_receiver_id)
-  OR(sender_id = in_receiver_id AND receiver_id = in_sender_id);
+  WHERE (sender_id = in_sender_id  AND receiver_id = in_receiver_id)
+  OR (sender_id = in_receiver_id AND receiver_id = in_sender_id);
 
   SELECT in_receiver_id AS receiver_id, id AS message_id
   FROM tbl_messages
@@ -57,7 +57,7 @@ BEGIN
       SELECT first_name AS name FROM tbl_profiles WHERE user_id = sender_id LIMIT 1
     ) AS sender, receiver_id, (
       SELECT first_name AS name FROM tbl_profiles WHERE user_id = receiver_id LIMIT 1
-    ), content_status, seen_at, company_name
+    ), content_status, delivered_at, seen_at, company_name
     FROM tbl_messages
     WHERE (sender_id = in_user_id AND receiver_id = $user_id)
     ORDER BY sent_at DESC
@@ -69,7 +69,7 @@ BEGIN
         SELECT first_name AS name FROM tbl_profiles WHERE user_id = sender_id LIMIT 1
       ) AS sender, receiver_id, (
         SELECT first_name AS name FROM tbl_profiles WHERE user_id = receiver_id LIMIT 1
-      ) AS receiver, content_status, seen_at, company_name
+      ) AS receiver, content_status, delivered_at, seen_at, company_name
     FROM tbl_messages
     WHERE in_user_id IN (sender_id, receiver_id)
     AND in_chatmate_id IN (sender_id, receiver_id)
@@ -88,7 +88,7 @@ BEGIN
     SELECT first_name FROM tbl_profiles WHERE user_id = sender_id
   ) AS sender, receiver_id, (
     SELECT first_name FROM tbl_profiles WHERE user_id = receiver_id
-  ) AS receiver, content_status, seen_at, company_name
+  ) AS receiver, content_status, delivered_at, seen_at, company_name
   FROM tbl_messages
   WHERE (
     in_user_id IN(sender_id, receiver_id) AND in_chatmate_id IN(sender_id, receiver_id)
@@ -97,12 +97,78 @@ END;;
 
 
 
-CREATE PROCEDURE chat_delivered(IN in_user_id INT, IN in_chatmates_id VARCHAR(9999))
+
+CREATE PROCEDURE chat_delivered(IN in_user_id INT)
 BEGIN
-  SELECT CURRENT_TIMESTAMP AS stamp;
-  UPDATE tbl_messages
-  SET content_status = "delivered"
-  WHERE receiver_id = in_user_id AND FIND_IN_SET(sender_id, in_chatmates_id) AND content_status = "sent";
+
+  DECLARE stamp DATETIME DEFAULT NOW();
+  DECLARE done INT DEFAULT 0;
+  DECLARE v INT;
+  
+  DECLARE tbl_chatmates_id_cur CURSOR FOR 
+    SELECT chatmate_id FROM tbl_chatmates_id;
+  DECLARE tbl_notify_cm_cur CURSOR FOR 
+    SELECT chatmate_id FROM tbl_notify_cm;
+  
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+  
+  DROP TEMPORARY TABLE IF EXISTS tbl_chatmates_id;
+  CREATE TEMPORARY TABLE tbl_chatmates_id(chatmate_id INT);
+  
+  DROP TEMPORARY TABLE IF EXISTS tbl_notify_cm;
+  CREATE TEMPORARY TABLE tbl_notify_cm(chatmate_id INT);
+  
+  INSERT INTO tbl_chatmates_id(chatmate_id)
+  SELECT 
+    CASE
+      WHEN sender_id != in_user_id THEN sender_id
+      ELSE receiver_id
+    END AS chatmate_id
+  FROM tbl_messages_head
+  WHERE sender_id = in_user_id OR receiver_id = in_user_id;
+  
+  SET done = 0;
+  OPEN tbl_chatmates_id_cur;
+  read_loop1: LOOP
+    FETCH tbl_chatmates_id_cur INTO v;
+    IF done THEN
+      LEAVE read_loop1;
+    END IF;
+    
+    INSERT INTO tbl_notify_cm(chatmate_id)
+    SELECT 
+      CASE
+        WHEN sender_id != in_user_id THEN sender_id
+        ELSE receiver_id
+      END AS chatmate_id
+    FROM tbl_messages
+    WHERE ((sender_id = in_user_id AND receiver_id = v)
+       OR (sender_id = v AND receiver_id = in_user_id))
+      AND sent_at <= stamp
+      AND content_status = 'sent'
+    LIMIT 1;
+  END LOOP;
+  CLOSE tbl_chatmates_id_cur;
+  
+  SET done = 0;
+  OPEN tbl_notify_cm_cur;
+  read_loop2: LOOP
+    FETCH tbl_notify_cm_cur INTO v;
+    IF done THEN
+      LEAVE read_loop2;
+    END IF;
+    
+    UPDATE tbl_messages
+    SET content_status = 'delivered', delivered_at = stamp
+    WHERE ((sender_id = in_user_id AND receiver_id = v)
+       OR (sender_id = v AND receiver_id = in_user_id))
+      AND content_status = 'sent'
+      AND sent_at <= stamp;
+  END LOOP;
+  CLOSE tbl_notify_cm_cur;
+  
+  SELECT stamp;
+  SELECT * FROM tbl_notify_cm;
 END;;
 
 
@@ -195,6 +261,7 @@ BEGIN
       sender_id,
       receiver_id,
       content_status,
+      delivered_at,
       seen_at
     )
     SELECT
@@ -205,6 +272,7 @@ BEGIN
       t1.sender_id,
       t1.receiver_id,
       t1.content_status,
+      t1.delivered_at,
       t1.seen_at
     FROM tbl_messages AS t1
     JOIN temp_selected_messages_id AS t2
@@ -277,7 +345,7 @@ BEGIN
       SELECT first_name FROM tbl_profiles WHERE user_id = sender_id
     ) AS sender, receiver_id, (
       SELECT first_name FROM tbl_profiles WHERE user_id = chatmate_id
-    ) AS receiver, content_status, seen_at, company_name
+    ) AS receiver, content_status, delivered_at, seen_at, company_name
   FROM tbl_messages
   WHERE id = in_message_id;
 

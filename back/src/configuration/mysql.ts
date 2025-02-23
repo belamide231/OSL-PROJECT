@@ -17,7 +17,8 @@ export const getMysqlConnection = () => {
             database: process.env.MYSQL_DATABASE,
             waitForConnections: true,
             connectionLimit: 10,
-            queueLimit: 0
+            queueLimit: 0,
+            multipleStatements: true
         });
 
         console.log(`CONNECTED TO MYSQL ${process.env.CLOUD_BASE ? 'CLOUD' : 'LOCAL'}`);

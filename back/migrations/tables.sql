@@ -12,7 +12,7 @@ CREATE TABLE tbl_roles_available(
 INSERT INTO tbl_roles_available(role) VALUES("admin"), ("account"), ("superUser"), ("user");
 
 CREATE TABLE tbl_roles (
-    user_id int,
+    user_id INT,
     company_name VARCHAR(99),
     role VARCHAR(99),
     FOREIGN KEY(role) REFERENCES tbl_roles_available(role),
@@ -20,7 +20,7 @@ CREATE TABLE tbl_roles (
 );
 
 CREATE TABLE tbl_profiles (
-    user_id int,
+    user_id INT,
     first_name VARCHAR(99),
     last_name VARCHAR(99),
     middle_name VARCHAR(99),
@@ -32,7 +32,7 @@ CREATE TABLE tbl_profiles (
 );
 
 CREATE TABLE tbl_messages (
-    id INT PRIMARY KEY AUTO_INCREMENT,
+    id INT PRIMARY KEY UNIQUE,
     sent_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     seen_at DATETIME DEFAULT NULL,
     delivered_at DATETIME DEFAULT NULL,
@@ -46,7 +46,9 @@ CREATE TABLE tbl_messages (
     FOREIGN KEY(receiver_id) REFERENCES tbl_users(id),
     INDEX idx_sent_at(sent_at),
     INDEX idx_sender_id(sender_id),
-    INDEX idx_receiver_id(receiver_id)
+    INDEX idx_receiver_id(receiver_id),
+    INDEX idx_content_status(content_status),
+    INDEX idx_company_name(company_name)
 );
 
 CREATE TABLE tbl_messages_head (

@@ -1,0 +1,9 @@
+db/*
+src/*
+node_modules/*
+
+.env
+.gitignore
+note.md
+README.md
+index.html
