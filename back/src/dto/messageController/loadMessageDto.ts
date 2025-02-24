@@ -1,4 +1,4 @@
-export interface getMessageDto {
+export interface loadMessageDto {
     messageId: number;
     chatmateId: number;
 }

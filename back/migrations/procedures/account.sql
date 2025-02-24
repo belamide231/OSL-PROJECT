@@ -1,4 +1,4 @@
-CREATE PROCEDURE create_account(IN in_user VARCHAR(99), IN in_password VARCHAR(99), IN in_email VARCHAR(99), IN in_company_name VARCHAR(99), IN in_role VARCHAR(99), IN in_first_name VARCHAR(99))
+CREATE PROCEDURE create_account(IN in_user VARCHAR(99), IN in_password VARCHAR(99), IN in_email VARCHAR(99), IN in_company_name VARCHAR(99), IN in_role VARCHAR(99))
 BEGIN
 
     INSERT INTO tbl_users(user, password)
@@ -10,7 +10,7 @@ BEGIN
     VALUES(@id, in_company_name, in_role);
 
     INSERT INTO tbl_profiles(user_id, email, first_name)
-    VALUES(@id, in_email, in_first_name);
+    VALUES(@id, in_email, in_email);
 
 END;;
 

@@ -17,6 +17,7 @@ export const seenChat = async (user: socketUser, data: any): Promise<void> => {
 
 
 export const messageDelivered = async (user: socketUser): Promise<void> => {
+
     const result = await deliveredChatService(user.id) as any;
     if(isFinite(result)) return;
     

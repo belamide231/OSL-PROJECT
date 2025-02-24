@@ -7,7 +7,7 @@ dotenv.config();
 
 const directory = (files: string[]): string => {
 
-    let script = fs.readFileSync(path.join(__dirname, `../../scripts/format.txt`), 'utf-8');
+    let script = fs.readFileSync(path.join(__dirname, `../../scripts/@format.txt`), 'utf-8');
 
     files.forEach(file => {
         const fileContent = fs.readFileSync(path.join(__dirname, `../../scripts/${file}.lua`), 'utf-8').trim();
@@ -49,7 +49,7 @@ export class getRedisConnection {
 
     private async functions() {
 
-        const functions = ['get_chats', 'get_chat', 'set_message']
+        const functions = ['set_message', 'get_message', 'get_chats']
         await this.con.sendCommand(['FUNCTION', 'LOAD', 'REPLACE', directory(functions)]);
     }
 }

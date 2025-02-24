@@ -58,9 +58,9 @@ export class SocketService {
     })
 
 
-    this.socket.on('receive message', async (messageId) => {
+    this.socket.on('receive message', async (data) => {
 
-      this.api.loadMessage(messageId).subscribe((res: any) => {
+      this.api.loadMessage(data.messageId, data.chatmateId).subscribe((res: any) => {
 
         const chatIndex = this._chatList.value.findIndex((x: any) => x[0].chatmate_id === res.chatmate_id);
         if(chatIndex === -1)
@@ -75,7 +75,8 @@ export class SocketService {
         previousChatlist.unshift(updatedChat);
         this._chatList.next(previousChatlist);
 
-        this.messageDelivered();
+        if(res.sender_id === res.chatmate_id) 
+          this.messageDelivered();
       });
     });
 

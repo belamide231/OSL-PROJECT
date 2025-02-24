@@ -14,7 +14,7 @@ const connection = {
 const queue = new Queue('chats', connection);
 
 
-export const setTimer = async (chatId: string) => {
+export const setCachedTimer = async (chatId: string) => {
     const existsTimer = await queue.getJob(chatId);
 
     existsTimer && await existsTimer.remove();

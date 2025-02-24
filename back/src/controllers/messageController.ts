@@ -4,14 +4,20 @@ import { getActiveClientsService, sendMessageService, loadChatListServices, load
 import { sendMessageDto } from "../dto/messageController/sendMessageDto";
 import { getConversationDto } from "../dto/messageController/getConversationDto";
 import { isAuthenticated } from "../guards/isAuthenticated";
-import { getMessageDto } from "../dto/messageController/getMessageDto";
 import { loadChatListDto } from "../dto/messageController/loadChatListDto";
 import { upload } from "../utilities/multer";
 import { dropboxUpload } from "../utilities/dropbox";
+import { loadMessageDto } from "../dto/messageController/loadMessageDto";
 
 
 export const messageController = Router();
 messageController
+
+
+.post('/getActiveClients', isAuthenticated, async (req: Request, res: Response): Promise<any> => {
+    const response = await getActiveClientsService((req.user as any).role);
+    return response.status !== 200 ? res.sendStatus(response.status) : res.status(200).json(response.result);
+})
 
 
 .post('/sendMessage', isAuthenticated, upload.single('file'), dropboxUpload, async (req: Request, res: Response): Promise<any> => {
@@ -20,9 +26,9 @@ messageController
 })
 
 
-.post('/getActiveClients', isAuthenticated, async (req: Request, res: Response): Promise<any> => {
-    const response = await getActiveClientsService((req.user as any).role);
-    return response.status !== 200 ? res.sendStatus(response.status) : res.status(200).json(response.result);
+.post('/loadMessage', isAuthenticated, async (req: Request, res: Response): Promise<any> => {
+    const response = await loadMessageService(req.body as loadMessageDto, (req.user as any).id, (req.user as any).name) as number | object;
+    return isFinite(response as number) ? res.sendStatus(response as number) : res.json(response);
 })
 
 
@@ -38,7 +44,3 @@ messageController
 })
 
 
-.post('/loadMessage', isAuthenticated, async (req: Request, res: Response): Promise<any> => {
-    const response = await loadMessageService(req.body as getMessageDto, (req.user as any).id);
-    return response.status !== 200 ? res.sendStatus(response.status) : res.status(response.status).json(response.result);
-})

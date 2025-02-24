@@ -1,10 +1,19 @@
-CALL create_account("ibcadmin", "$2a$10$VEflIDT1RYW0Tj47vb5D..ZCKGT0oOVsc0y2xS6O9MHKew/oeZXrS", "belamidemills29@gmail.com", "ibc", "admin", "IBC Admin");
-CALL create_account("jetadmin", "$2a$10$Iv8njZz1ljKIi8hvGjdAquLvGfZVD79zgdSj2H3nkYbEvWtnQeCCy", "belamidemills29@gmail.com", "jet", "admin", "Jet Admin");
-CALL create_account("gisadmin", "$2a$10$36BvogjTCIMw5XVRveaQBuKleEsTSD4ZyXL7d/a/l8Oj2DZLUj6y6", "belamidemills29@gmail.com", "gis", "admin", "Gis Admin");
+CALL create_account("ibcadmin", "$2a$10$VEflIDT1RYW0Tj47vb5D..ZCKGT0oOVsc0y2xS6O9MHKew/oeZXrS", "belamidemills29@gmail.com", "ibc", "admin");
+
+UPDATE tbl_profiles SET first_name = 'IBC ADMIN' WHERE user_id = 1;
+
+CALL create_account("jetadmin", "$2a$10$Iv8njZz1ljKIi8hvGjdAquLvGfZVD79zgdSj2H3nkYbEvWtnQeCCy", "belamidemills29@gmail.com", "jet", "admin");
+
+UPDATE tbl_profiles SET first_name = 'JET ADMIN' WHERE user_id = 2;
+
+CALL create_account("gisadmin", "$2a$10$36BvogjTCIMw5XVRveaQBuKleEsTSD4ZyXL7d/a/l8Oj2DZLUj6y6", "belamidemills29@gmail.com", "gis", "admin");
+
+UPDATE tbl_profiles SET first_name = 'GIS ADMIN' WHERE user_id = 3;
 
 
 
-CALL insert_message(10, 'sent', NOW(), NULL, NULL, NULL, 1, 3, 'text', 'HELLO WORLD!');
+CALL insert_message(999999999, 'sent', NOW(), NULL, NULL, NULL, 1, 3, 'text', 'HELLO WORLD!');
+
 
 -- CALL insert_message(1, DATE_SUB(NOW(), INTERVAL 100 YEAR), "text", "Hello there GIS admin1", 1, 3);
 -- CALL insert_message(2, DATE_SUB(NOW(), INTERVAL 3 YEAR), "text", "Hello there GIS admin2", 1, 3);
