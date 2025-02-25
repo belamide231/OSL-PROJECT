@@ -4,7 +4,7 @@ redis.register_function('seen_message', function (_, args)
     local cid = tostring(args[2])
     local stamp = tostring(args[3])
     local toNotify = 0
-    
+
     local chatId = redis.call('GET', string.format('chats:participants:%d:%d', uid, cid))
     if chatId == false then
         return nil

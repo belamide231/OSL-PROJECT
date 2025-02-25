@@ -1,13 +1,13 @@
 import { mysql, socketClients, io, redis } from "../app";
 import { getConversationDto } from "../dto/messageController/getConversationDto";
 import { sendMessageDto } from "../dto/messageController/sendMessageDto";
-import { loadChatListDto } from "../dto/messageController/loadChatListDto";
 import { validContentType } from "../validations/validContentType";
 import { validRoles } from "../validations/validRoles";
 import { messageModel } from "../model/messageModel";
 import { setCachedTimer } from "../utilities/bullmq";
 import { insertMessage } from "../calls/InsertMessage";
 import { loadMessageDto } from "../dto/messageController/loadMessageDto";
+import { User } from "../interfaces/user";
 
 
 export const getActiveClientsService = async (role: string): Promise<{ status: number, result: object | null }> => {
@@ -151,22 +151,36 @@ export const loadMessageService = async (data: loadMessageDto, userId: number, n
     }
 }
 
-
-export const loadChatListServices = async (id: number, data: loadChatListDto): Promise<{ status: number, result: object | null }> => {
-    if(isNaN(data.chatListLength))
+/**
+ * @param data - Ilisanan natog chatListLength since usa ra ang attributes sa object
+ */
+export const loadChatListServices = async (user: User, chatListLength: number): Promise<{ status: number, result: object | null }> => {
+    if(isNaN(chatListLength))
         return { status: 422, result: null };
 
     try {
 
-        const chatlist = await redis.con.sendCommand(['FCALL', 'get_chats', '0', id.toString()]) as string;
-        console.log(JSON.parse(chatlist));
+        let redisChatList = JSON.parse(await redis.con.sendCommand(['FCALL', 'get_chats', '0', user.id.toString()]) as string) as any;
+        let idsOfChatmates: any = [];
+        redisChatList = redisChatList.map((x: any) => {
+            x[0].sender_id == user.id ? x[0].sender = user.name : x[0].receiver = user.name
+            idsOfChatmates.push(x[0].chatmate_id)
+            return x; 
+        })
 
-        const result = (await mysql.promise().query('CALL get_chat_list(?, ?)', [data.chatListLength, id]) as any)[0];
+        const chatmateNames = await mysql.promise().query('SELECT first_name as name FROM tbl_profiles WHERE FIND_IN_SET(user_id, ?)', [idsOfChatmates.toString()]) as any;
+        idsOfChatmates.forEach((x: any, i: number) => {
+            // PAG BUTANG SA GI QUERY NGA NAMES SA REDISCHATLIST
+            x.name
+        })
+
+        
+        const result = (await mysql.promise().query('CALL get_chat_list(?, ?)', [chatListLength, user.id]) as any)[0];
         if(result.fieldCount === 0)
             return { status: 200, result: { chatList: [], order: [] } };
 
         result.splice(result.length - 1, 1);
-        console.log(result);
+        // console.log(result);
         return { status: 200, result: { chatList: result, order: result.map((x: any) => x[0].chatmate_id) } };
 
     } catch(err) {

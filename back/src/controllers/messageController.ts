@@ -4,10 +4,10 @@ import { getActiveClientsService, sendMessageService, loadChatListServices, load
 import { sendMessageDto } from "../dto/messageController/sendMessageDto";
 import { getConversationDto } from "../dto/messageController/getConversationDto";
 import { isAuthenticated } from "../guards/isAuthenticated";
-import { loadChatListDto } from "../dto/messageController/loadChatListDto";
 import { upload } from "../utilities/multer";
 import { dropboxUpload } from "../utilities/dropbox";
 import { loadMessageDto } from "../dto/messageController/loadMessageDto";
+import { User } from "../interfaces/user";
 
 
 export const messageController = Router();
@@ -33,7 +33,7 @@ messageController
 
 
 .post('/loadChatList', isAuthenticated, async (req: Request, res: Response): Promise<any> => {
-    const response = await loadChatListServices((req.user as any).id, req.body as loadChatListDto);
+    const response = await loadChatListServices(req.user as User, req.body.chatListLength);
     return response.status !== 200 ? res.sendStatus(response.status) : res.status(response.status).json(response.result);
 })
 
