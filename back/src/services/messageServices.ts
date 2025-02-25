@@ -170,10 +170,10 @@ export const loadChatListServices = async (user: User, chatListLength: number): 
 
         const chatmateNames = await mysql.promise().query('SELECT first_name as name FROM tbl_profiles WHERE FIND_IN_SET(user_id, ?)', [idsOfChatmates.toString()]) as any;
         idsOfChatmates.forEach((x: any, i: number) => {
-            // PAG BUTANG SA GI QUERY NGA NAMES SA REDISCHATLIST
-            x.name
+            const index = redisChatList.findIndex((x: any) => x[0].chatmate_id === idsOfChatmates[i]);
+            redisChatList[index][0].chatmate = chatmateNames[0][0].name;
+            redisChatList[index][0].sender === false ? redisChatList[index][0].sender = chatmateNames[0][0].name : redisChatList[index][0].receiver = chatmateNames[0][0].name;
         })
-
         
         const result = (await mysql.promise().query('CALL get_chat_list(?, ?)', [chatListLength, user.id]) as any)[0];
         if(result.fieldCount === 0)
