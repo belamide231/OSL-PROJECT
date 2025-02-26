@@ -163,7 +163,7 @@ END;;
 
 
 
-CREATE PROCEDURE get_chat_list(IN in_chat_list_length INT, IN in_user INT)
+CREATE PROCEDURE get_chat_list(IN in_chat_list_length INT, IN in_user INT, in in_exception VARCHAR(7999))
 BEGIN
   DECLARE done INT DEFAULT 0;
   DECLARE in_chatmate_id INT;
@@ -186,6 +186,10 @@ BEGIN
     FETCH cur INTO in_chatmate_id;
     IF done THEN
       LEAVE read_loop;
+    END IF;
+
+    IF FIND_IN_SET(in_chatmate_id, in_exception) != 0 THEN
+      ITERATE read_loop;
     END IF;
 
     CALL load_messages(0, in_user, in_chatmate_id, IF(in_chat_list_length = 0, 15, 1));

@@ -21,7 +21,7 @@ messageController
 
 
 .post('/sendMessage', isAuthenticated, upload.single('file'), dropboxUpload, async (req: Request, res: Response): Promise<any> => {
-    const response = await sendMessageService(req.body as sendMessageDto, (req.user as any).id) as number | object;
+    const response = await sendMessageService((req.user as any).id, req.body as sendMessageDto) as number | object;
     return isFinite(response as number) ? res.sendStatus(response as number) : res.json(response);
 })
 
@@ -33,8 +33,8 @@ messageController
 
 
 .post('/loadChatList', isAuthenticated, async (req: Request, res: Response): Promise<any> => {
-    const response = await loadChatListServices(req.user as User, req.body.chatListLength);
-    return response.status !== 200 ? res.sendStatus(response.status) : res.status(response.status).json(response.result);
+    const response = await loadChatListServices(req.user as User, req.body.chatListLength) as object | number;
+    return isFinite(response as number) ? res.sendStatus(response as number) : res.json(response);
 })
 
 

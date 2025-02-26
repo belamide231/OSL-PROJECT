@@ -14,20 +14,20 @@ const connection = {
 const queue = new Queue('chats', connection);
 
 
-export const setCachedTimer = async (chatId: string) => {
-    const existsTimer = await queue.getJob(chatId);
+export const setCachedTimer = async (data: { chatKey: string, users: number[] }) => {
+    const removeExists = await queue.getJob(data.chatKey);
 
-    existsTimer && await existsTimer.remove();
+    removeExists && await removeExists.remove();
 
     await queue.add('chat', { 
-        chatId 
+        data 
     }, {
-        delay: 1000 * 60 * 60,
-        jobId: chatId
+        delay: 1000 * 10,
+        jobId: data.chatKey
     });
 }
 
 
 new Worker('chats', async (job) => {
-    await migrateCachedMessages(job.data.chatId);
+    await migrateCachedMessages(job.data.data);
 }, connection);

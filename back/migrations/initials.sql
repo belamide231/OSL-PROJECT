@@ -10,9 +10,15 @@ CALL create_account("gisadmin", "$2a$10$36BvogjTCIMw5XVRveaQBuKleEsTSD4ZyXL7d/a/
 
 UPDATE tbl_profiles SET first_name = 'GIS ADMIN' WHERE user_id = 3;
 
+CALL create_account("ibmadmin", NULL, "belamidemills29@gmail.com", "gis", "admin");
+
+UPDATE tbl_profiles SET first_name = 'IBM ADMIN' WHERE user_id = 4;
 
 
-CALL insert_message(999999999, 'sent', NOW(), NULL, NULL, NULL, 1, 3, 'text', 'HELLO WORLD!');
+
+CALL insert_message(999999999, 'sent', NOW() - INTERVAL 3 MINUTE, NULL, NULL, NULL, 1, 3, 'text', 'HELLO GIS ADMIN');
+CALL insert_message(1000000000, 'sent', NOW() - INTERVAL 2 MINUTE, NULL, NULL, NULL, 1, 2, 'text', 'HELLO JET ADMIN');
+CALL insert_message(1000000001, 'sent', NOW() - INTERVAL 1 MINUTE, NULL, NULL, NULL, 1, 4, 'text', 'HELLO IBM ADMIN');
 
 
 -- CALL insert_message(1, DATE_SUB(NOW(), INTERVAL 100 YEAR), "text", "Hello there GIS admin1", 1, 3);
