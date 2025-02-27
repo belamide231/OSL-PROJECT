@@ -70,49 +70,6 @@ END;;
 
 
 
-CREATE PROCEDURE migration_status(IN in_sender_id INT, IN in_receiver_id INT, IN in_status VARCHAR(20), IN in_delivered_at DATETIME, IN in_seen_at DATETIME)
-BEGIN
-
-  DECLARE latest_status VARCHAR(20);
-  SET latest_status = (
-    SELECT 
-      content_status 
-    FROM tbl_messages 
-    WHERE sender_id = in_sender_id 
-    AND receiver_id = in_receiver_id
-    ORDER BY sent_at DESC
-    LIMIT 1);
-
-  IF in_status = 'delivered' THEN
-
-    UPDATE tbl_messages
-    SET 
-      content_status = in_status, 
-      delivered_at = in_delivered_at
-    WHERE sender_id = in_sender_id 
-    AND receiver_id = in_receiver_id
-    AND content_status = 'sent';
-  
-  ELSEIF in_status = 'seen' THEN
-
-    UPDATE tbl_messages
-    SET 
-      content_status = in_status,
-      delivered_at = CASE
-        WHEN delivered_at IS NOT NULL THEN delivered_at
-        ELSE in_delivered_at
-      END,
-      seen_at = in_seen_at
-    WHERE sender_id = in_sender_id 
-    AND receiver_id = in_receiver_id
-    AND (content_status = 'sent' OR content_status = 'delivered');
-
-  END IF;
-
-END;;
-
-
-
 CREATE PROCEDURE load_messages(IN in_message_length INT, IN in_user_id INT, IN in_chatmate_id INT, IN in_limit INT)
 BEGIN
   SELECT (

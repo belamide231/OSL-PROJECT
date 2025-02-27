@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start": "npm install && node ./dist/app.js",
-    "dev": "cls && nodemon ./src/app.ts",
+    "dev": "clear && nodemon ./src/app.ts",
     "build": "tsc",
     "production": "npm install && node ./initialize/dnsInitializer.js && npm run migrations-restart && npm run build && cd ../front && npm install && ng build --configuration=production && cd ../back",
     "initialize-dns": "node ./initialize/dnsInitializer.js",

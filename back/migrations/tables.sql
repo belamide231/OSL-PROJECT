@@ -44,6 +44,7 @@ CREATE TABLE tbl_messages (
     company_name VARCHAR(99),
     FOREIGN KEY(sender_id) REFERENCES tbl_users(id),
     FOREIGN KEY(receiver_id) REFERENCES tbl_users(id),
+    INDEX idx_content_status(content_status),
     INDEX idx_sent_at(sent_at),
     INDEX idx_sender_id(sender_id),
     INDEX idx_receiver_id(receiver_id),
