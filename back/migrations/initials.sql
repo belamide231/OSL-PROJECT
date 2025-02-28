@@ -1,17 +1,13 @@
 CALL create_account("ibcadmin", "$2a$10$VEflIDT1RYW0Tj47vb5D..ZCKGT0oOVsc0y2xS6O9MHKew/oeZXrS", "belamidemills29@gmail.com", "ibc", "admin");
-
 UPDATE tbl_profiles SET first_name = 'IBC ADMIN' WHERE user_id = 1;
 
 CALL create_account("jetadmin", "$2a$10$Iv8njZz1ljKIi8hvGjdAquLvGfZVD79zgdSj2H3nkYbEvWtnQeCCy", "belamidemills29@gmail.com", "jet", "admin");
-
 UPDATE tbl_profiles SET first_name = 'JET ADMIN' WHERE user_id = 2;
 
 CALL create_account("gisadmin", "$2a$10$36BvogjTCIMw5XVRveaQBuKleEsTSD4ZyXL7d/a/l8Oj2DZLUj6y6", "belamidemills29@gmail.com", "gis", "admin");
-
 UPDATE tbl_profiles SET first_name = 'GIS ADMIN' WHERE user_id = 3;
 
 CALL create_account("ibmadmin", NULL, "belamidemills29@gmail.com", "gis", "admin");
-
 UPDATE tbl_profiles SET first_name = 'IBM ADMIN' WHERE user_id = 4;
 
 
@@ -19,6 +15,12 @@ UPDATE tbl_profiles SET first_name = 'IBM ADMIN' WHERE user_id = 4;
 CALL insert_message(999999999, 'sent', NOW() - INTERVAL 3 MINUTE, NULL, NULL, NULL, 1, 3, 'text', 'HELLO GIS ADMIN');
 CALL insert_message(1000000000, 'sent', NOW() - INTERVAL 2 MINUTE, NULL, NULL, NULL, 1, 2, 'text', 'HELLO JET ADMIN');
 CALL insert_message(1000000001, 'sent', NOW() - INTERVAL 1 MINUTE, NULL, NULL, NULL, 1, 4, 'text', 'HELLO IBM ADMIN');
+
+CALL insert_message(1000000002, 'sent', NOW(), NULL, NULL, NULL, 1, 2, 'text', 'HELLO IBM ADMIN');
+CALL insert_message(1000000003, 'sent', NOW(), NULL, NULL, NULL, 1, 2, 'text', 'HELLO IBM ADMIN');
+CALL insert_message(1000000004, 'sent', NOW(), NULL, NULL, NULL, 1, 2, 'text', 'HELLO IBM ADMIN');
+CALL insert_message(1000000005, 'sent', NOW(), NULL, NULL, NULL, 1, 2, 'text', 'HELLO IBM ADMIN');
+CALL insert_message(1000000006, 'sent', NOW(), NULL, NULL, NULL, 1, 2, 'text', 'HELLO IBM ADMIN');
 
 
 -- CALL insert_message(1, DATE_SUB(NOW(), INTERVAL 100 YEAR), "text", "Hello there GIS admin1", 1, 3);

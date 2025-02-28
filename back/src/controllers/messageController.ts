@@ -33,7 +33,7 @@ messageController
 
 
 .post('/loadChatList', isAuthenticated, async (req: Request, res: Response): Promise<any> => {
-    const response = await loadChatListServices(req.user as User, req.body.chatListLength) as object | number;
+    const response = await loadChatListServices(req.user as User, req.body.chatListLength) as any;
     return isFinite(response as number) ? res.sendStatus(response as number) : res.json(response);
 })
 

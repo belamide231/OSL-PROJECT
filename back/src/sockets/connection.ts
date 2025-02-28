@@ -54,8 +54,8 @@ export const connection = async (socket: Socket): Promise<any> => {
     io.to(socket.id).emit('connected');
     socket.broadcast.emit('someone joined', (user));
     
-    socket.on("seen chat", (data: any) => seenChat(user, data));
     socket.on("message delivered", () => messageDelivered(user));
+    socket.on("seen chat", (data: any) => seenChat(user, data));
     socket.on("typing message", (chatmateId: number) => typingMessage(user, chatmateId));
     socket.on("blank message", (chatmateId: number) => blankMessage(user, chatmateId));    
     

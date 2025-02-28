@@ -78,17 +78,25 @@ export const sendMessageService = async (senderId: number, data: sendMessageDto)
     } catch (err) {
 
         console.log(err);
-        console.log("REDIS ERROR");
+        console.log('FUNCTION "sendMessageService"');
         return 500;
     }
 }
 
 
 export const migrateCachedMessages = async (data: { chatKey: string, users: number[] }): Promise<void> => {
-    const messages = JSON.parse((await redis.con.sendCommand(['FCALL', 'get_chat', '0', data.chatKey]) as any))[0];
 
-    let sql = '';;
-    messages.forEach((x: any) => sql += insertMessage(x));
+    let sql = '';
+    const messages = JSON.parse((await redis.con.sendCommand(['FCALL', 'get_chat', '0', data.chatKey]) as any))[0];
+    const messagesTail: any = {};
+    messages.forEach((x: any, i: number) => {
+        sql += insertMessage(x);
+
+        if(!messagesTail[x.sender_id] && messages[(messages.length - 1) - i].content_status !== 'sent') 
+            messagesTail[x.sender_id] = messages[(messages.length - 1) - i];
+    });
+
+    Object.values(messagesTail).forEach((x: any) => sql = `CALL migration_status(${x.sender_id}, ${x.receiver_id}, '${x.content_status}', ${x.delivered_at}, ${x.seen_at});\n` + sql);
 
     try {
 
@@ -98,7 +106,7 @@ export const migrateCachedMessages = async (data: { chatKey: string, users: numb
     } catch (err) {
 
         console.log(err);
-        console.log("MYSQL ERROR");
+        console.log('MYSQL "migrateCachedMessages"');
     }
 }
 
@@ -109,9 +117,8 @@ export const loadMessageService = async (data: loadMessageDto, userId: number, n
 
     try {
 
-        const result = await redis.con.sendCommand(['FCALL', 'get_message', '0', userId.toString(), data.chatmateId.toString(), data.messageId.toString()]) as string;
-        
-        const message = JSON.parse(result);
+        const result = await redis.con.sendCommand(['FCALL', 'get_message', '0', userId.toString(), data.chatmateId.toString(), data.messageId.toString()]) as string | null;
+        const message = JSON.parse(result as string);
         const chatmateId = message.sender_id !== userId ? message.sender_id : message.receiver_id;
         let chatmate = await redis.con.get(`chats:users:${chatmateId}:name`);
 
@@ -142,49 +149,59 @@ export const loadMessageService = async (data: loadMessageDto, userId: number, n
 
     } catch (err) {
 
-        console.log("REDIS ERROR");
         console.log(err);
+        console.log('FUNCTION "loadMessageService"');
         return 500;
     }
 }
 
 
 export const loadChatListServices = async (user: User, chatListLength: number): Promise<object | number> => {
+
     if(isNaN(chatListLength))
         return 422;
 
     try {
 
-        let redisChatList = JSON.parse(await redis.con.sendCommand(['FCALL', 'get_chats', '0', user.id.toString()]) as string) as any;
+        let redisChatList: any = await redis.con.sendCommand(['FCALL', 'get_chats', '0', user.id.toString()]);
         let idsOfChatmates: any = [];
-        redisChatList = redisChatList.map((x: any) => {
-            x[0].sender_id == user.id ? x[0].sender = user.name : x[0].receiver = user.name
-            idsOfChatmates.push(x[0].chatmate_id)
-            return x; 
-        });
 
-        let chatmateNames = await mysql.promise().query('SELECT first_name as name FROM tbl_profiles WHERE FIND_IN_SET(user_id, ?)', [idsOfChatmates.toString()]) as any;
+        if(redisChatList !== null) {
 
-        idsOfChatmates.forEach((x: any, i: number) => {
-            const index = redisChatList.findIndex((x: any) => x[0].chatmate_id === idsOfChatmates[i]);
-            redisChatList[index][0].chatmate = chatmateNames[0][0].name;
-            redisChatList[index][0].sender === false ? redisChatList[index][0].sender = chatmateNames[0][0].name : redisChatList[index][0].receiver = chatmateNames[0][0].name;
-            chatmateNames[0][(chatmateNames[0].length - i) - 1]['id'] = x;
-        });
+            redisChatList = JSON.parse(redisChatList);
+            redisChatList = redisChatList.map((x: any) => {
 
-        chatmateNames.length !== 0 && await redis.con.sendCommand(['FCALL', 'set_names', '0', JSON.stringify(chatmateNames[0])]);
-        
-        const mysqlChatList = (await mysql.promise().query('CALL get_chat_list(?, ?, ?)', [chatListLength, user.id, idsOfChatmates.toString()]) as any)[0];
-        if(mysqlChatList.length === 0 && mysqlChatList.fieldCount === 0)
-            return { chatList: [], order: [] } ;
+                x[0].sender_id == user.id ? x[0].sender = user.name : x[0].receiver = user.name
+                idsOfChatmates.push(x[0].chatmate_id)
+                return x; 
+            });
+    
+            let chatmateNames = await mysql.promise().query('SELECT first_name as name FROM tbl_profiles WHERE FIND_IN_SET(user_id, ?)', [idsOfChatmates.toString()]) as any;
+    
+            idsOfChatmates.forEach((x: any, i: number) => {
+                const index = redisChatList.findIndex((x: any) => x[0].chatmate_id === idsOfChatmates[i]);
+                redisChatList[index][0].chatmate = chatmateNames[0][0].name;
+                redisChatList[index][0].sender === false ? redisChatList[index][0].sender = chatmateNames[0][0].name : redisChatList[index][0].receiver = chatmateNames[0][0].name;
+                chatmateNames[0][(chatmateNames[0].length - i) - 1]['id'] = x;
+            });
+    
+            chatmateNames.length !== 0 && await redis.con.sendCommand(['FCALL', 'set_names', '0', JSON.stringify(chatmateNames[0])]);
 
-        mysqlChatList.splice(mysqlChatList.length - 1, 1);
-        return { chatList: redisChatList.concat(mysqlChatList), order: idsOfChatmates.concat(mysqlChatList.map((x: any) => x[0].chatmate_id)) };
+        } else 
+            redisChatList = [];
+
+        let [mysqlChatList]: any[] = await mysql.promise().query('CALL get_chat_list(?, ?, ?)', [chatListLength, user.id, idsOfChatmates.toString()]);
+        Array.isArray(mysqlChatList) ? mysqlChatList.pop() : mysqlChatList = [];
+
+        const chatList = redisChatList.concat(mysqlChatList);
+        const order = idsOfChatmates.concat(mysqlChatList.map((x: any) => x[0].chatmate_id));
+
+        return { chatList, order };
 
     } catch(err) {
 
         console.log(err);
-        console.log("MYSQL OR REDIS ERROR");
+        console.log('FUNCTION "loadChatListServices"');
         return 500;
     }
 }
@@ -199,9 +216,10 @@ export const loadMessagesService = async (userId: number, data: getConversationD
         const result = (await mysql.promise().query('CALL load_messages(?, ?, ?, ?)', [data.messageLength, userId, data.chatmateId, 15]) as any)[0][0];
         return { status: 200, result: result };
 
-    } catch {
+    } catch (err) {
 
-        console.log("MYSQL ERROR");
+        console.log(err);
+        console.log('FUNCTION "loadMessagesService"');
         return { status: 500, result: null };
     }
 }
@@ -213,12 +231,15 @@ export const deliveredChatService = async (userId: number): Promise<any> => {
 
     try {
 
-        const result = (await mysql.promise().query("CALL chat_delivered(?)", [userId]) as any)[0].slice(0, 2);
-        return result;
+        // TANGTANGONON NATO ANG MYSQL NYA EH PULI ANG REDIS
+
+        const mysqlResult = (await mysql.promise().query("CALL chat_delivered(?)", [userId]) as any)[0].slice(0, 2);
+        return mysqlResult;
 
     } catch (err) {
 
-        console.log("MYSQL ERROR");
+        console.log(err);
+        console.log('FUNCTION "deliveredChatService"');
         return 500;
     }
 }
@@ -233,9 +254,10 @@ export const seenChatService = async (userId: number, chatmateId: number): Promi
         const result = (await mysql.promise().query('CALL seen_chat(?, ?)', [userId, chatmateId]) as any)[0][0][0];
         return result;
 
-    } catch {
+    } catch (err) {
 
-        console.log("MYSQL ERROR");
+        console.log(err);
+        console.log('FUNCTION "seenChatService"');
         return 500;
     }
 }

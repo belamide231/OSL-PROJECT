@@ -55,8 +55,14 @@ export class getRedisConnection {
             'get_chats', 
             'set_names',
             'delete_chat',
-            'get_chat'
+            'get_chat',
+            'delivered_message'
         ];
+
+        const filePath = path.join(__dirname, '../../scripts/@all_functions.lua');
+        fs.existsSync(filePath) && fs.unlinkSync(filePath);
+        fs.writeFileSync(filePath, directory(functions));
+
         await this.con.sendCommand(['FUNCTION', 'LOAD', 'REPLACE', directory(functions)]);
     }
 }

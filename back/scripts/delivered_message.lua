@@ -1,44 +1,51 @@
 redis.register_function('delivered_message', function (_, args)
 
-    local uid = tostring(args[1])
-    local cids = args[2]
-    local stamp = tostring(args[4])
-    local toNotify = {}
-    local exists = 0
+    local user = tonumber(args[1])
+    local chatmates_key = string.format('chats:users:%d:chatlist', user)
 
-    for _, cid in ipairs(cids) do
-
-        local chatId = redis.call('GET', string.format('chats:participants:%d:%d', uid, cid))
-        if chatId == false then
-            goto end_first_loop
-        end
-
-        local messages = redis.call('LRANGE', chatId, '0', '-1')
-        if messages == 0 then
-            goto end_first_loop
-        end
-
-        for i, msg in ipairs(messages) do
-
-            local message = cjson.decode(msg)
-            if message.content_status ~= 'sent' then
-                goto end_second_loop
-            end
-
-            message.content_status = 'delivered'
-            message.delivered_at = stamp
-            redis.call('LSET', chatId, i-1, cjson.encode(message))
-
-            if exists == 0 then
-                table.insert(toNotify, cid)
-                exists = 1
-            end
-
-            ::end_second_loop::
-        end
-
-        ::end_first_loop::
-
-        exists = 0
+    if redis.call('EXISTS', chatmates_key) == 0 then
+        return
     end
+
+    local chatmates_to_notify = {}
+    local chatmate_search_index = 0
+
+    while true do
+
+        local chatmates = redis.call('LRANGE', chatmates_key, chatmate_search_index, chatmate_search_index)
+        if #chatmates == 0 then
+            break
+        end
+
+        local chat_key = redis.call('GET', string.format('chats:participants:%d:%d', user, chatmates[1]))
+        if chat_key == nil then
+            break
+        end
+
+        local message_search_index = 0
+        while true do
+
+            local stringified_messages = redis.call('LRANGE', chat_key, message_search_index, message_search_index)
+
+            if #stringified_messages == 0 then
+                break
+            end
+
+            local object_message = cjson.decode(stringified_messages[1])
+            if object_message.content_status == 'delivered' then
+                break
+            end
+
+            object_message.content_status = 'delivered'
+            redis.call('LSET', chat_key, message_search_index, cjson.encode(object_message))
+
+            table.insert(chatmates_to_notify, tonumber(chatmates[1]))
+
+            message_search_index = message_search_index + 1
+        end
+
+        chatmate_search_index = chatmate_search_index + 1
+    end
+
+    return chatmates_to_notify
 end)

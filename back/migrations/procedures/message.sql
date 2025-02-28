@@ -70,8 +70,52 @@ END;;
 
 
 
+CREATE PROCEDURE migration_status(IN in_sender_id INT, IN in_receiver_id INT, IN in_status VARCHAR(20), IN in_delivered_at DATETIME, IN in_seen_at DATETIME)
+BEGIN
+
+  DECLARE latest_status VARCHAR(20);
+  SET latest_status = (
+    SELECT 
+      content_status 
+    FROM tbl_messages 
+    WHERE sender_id = in_sender_id 
+    AND receiver_id = in_receiver_id
+    ORDER BY sent_at DESC
+    LIMIT 1);
+
+  IF in_status = 'delivered' THEN
+
+    UPDATE tbl_messages
+    SET 
+      content_status = in_status, 
+      delivered_at = in_delivered_at
+    WHERE sender_id = in_sender_id 
+    AND receiver_id = in_receiver_id
+    AND content_status = 'sent';
+  
+  ELSEIF in_status = 'seen' THEN
+
+    UPDATE tbl_messages
+    SET 
+      content_status = in_status,
+      delivered_at = CASE
+        WHEN delivered_at IS NOT NULL THEN delivered_at
+        ELSE in_delivered_at
+      END,
+      seen_at = in_seen_at
+    WHERE sender_id = in_sender_id 
+    AND receiver_id = in_receiver_id
+    AND (content_status = 'sent' OR content_status = 'delivered');
+
+  END IF;
+
+END;;
+
+
+
 CREATE PROCEDURE load_messages(IN in_message_length INT, IN in_user_id INT, IN in_chatmate_id INT, IN in_limit INT)
 BEGIN
+
   SELECT (
     SELECT first_name FROM tbl_profiles WHERE user_id = in_chatmate_id
   ) AS chatmate, in_chatmate_id AS chatmate_id, id, sent_at, content_type, content, sender_id, (
@@ -85,6 +129,43 @@ BEGIN
   ) ORDER BY sent_at DESC LIMIT in_limit OFFSET in_message_length;
 END;;
 
+
+
+CREATE PROCEDURE get_chat_list(IN in_chat_list_length INT, IN in_user INT, in in_exception VARCHAR(7999))
+BEGIN
+  DECLARE done INT DEFAULT 0;
+  DECLARE in_chatmate_id INT;
+  DECLARE cur CURSOR FOR
+    SELECT
+      CASE
+        WHEN sender_id != in_user THEN sender_id
+        ELSE receiver_id
+      END AS chatmate_id
+    FROM tbl_messages_head
+    WHERE in_user IN(sender_id, receiver_id)
+    ORDER BY sent_at DESC
+    LIMIT 15 OFFSET in_chat_list_length;
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+  
+  OPEN cur;
+
+  read_loop: LOOP
+    FETCH cur INTO in_chatmate_id;
+    IF done THEN
+      LEAVE read_loop;
+    END IF;
+
+    IF FIND_IN_SET(in_chatmate_id, in_exception) != 0 THEN
+      ITERATE read_loop;
+    END IF;
+
+    -- CALL load_messages(0, in_user, in_chatmate_id, IF(in_chat_list_length = 0, 15, 1));
+    CALL load_messages(0, in_user, in_chatmate_id, 1);
+
+  END LOOP;
+
+  CLOSE cur;
+END;;
 
 
 
@@ -160,45 +241,6 @@ BEGIN
   SELECT stamp;
   SELECT * FROM tbl_notify_cm;
 END;;
-
-
-
-CREATE PROCEDURE get_chat_list(IN in_chat_list_length INT, IN in_user INT, in in_exception VARCHAR(7999))
-BEGIN
-  DECLARE done INT DEFAULT 0;
-  DECLARE in_chatmate_id INT;
-  DECLARE cur CURSOR FOR
-    SELECT
-      CASE
-        WHEN sender_id != in_user THEN sender_id
-        ELSE receiver_id
-      END AS chatmate_id
-    FROM tbl_messages_head
-    WHERE in_user IN(sender_id, receiver_id)
-    ORDER BY sent_at DESC
-    LIMIT 15 OFFSET in_chat_list_length;
-
-  DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
-
-  OPEN cur;
-
-  read_loop: LOOP
-    FETCH cur INTO in_chatmate_id;
-    IF done THEN
-      LEAVE read_loop;
-    END IF;
-
-    IF FIND_IN_SET(in_chatmate_id, in_exception) != 0 THEN
-      ITERATE read_loop;
-    END IF;
-
-    CALL load_messages(0, in_user, in_chatmate_id, IF(in_chat_list_length = 0, 15, 1));
-
-  END LOOP;
-
-  CLOSE cur;
-END;;
-
 
 
 
