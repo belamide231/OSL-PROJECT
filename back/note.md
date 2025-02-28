@@ -12,4 +12,7 @@
 
 
 # PROBLEM
-dapat ig migrate nato sa cached data to db, ang status sa data nga naa na sa db daan, dapat ma update
+dapat ig migrate nato sa cached data to db, ang status sa data nga naa na sa db daan, dapat ma 
+
+
+WANI NA PUSH!
