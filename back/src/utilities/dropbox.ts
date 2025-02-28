@@ -6,7 +6,7 @@ import { dropbox } from '../app';
 export const dropboxUpload = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     req.body.contentType = 'text';
     if(req.file !== undefined) {
-        
+
         try {
 
             await fs.promises.access(req.file.path);
