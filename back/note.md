@@ -5,15 +5,17 @@
 LOCATIONS
 OSL-PROJECT\back\src\configuration\redis.ts
 OSL-PROJECT\back\src\sockets\connection.ts
-    message delivered
+    FUNCTION(message delivered)
 OSL-PROJECT\back\src\sockets\message.ts
-    messageDelivered
+    FUNCTION(messageDelivered)
 OSL-PROJECT\back\src\services\messageServices.ts
-    deliveredChatService
+    FUNCTION(deliveredChatService)
 OSL-PROJECT\back\scripts\delivered_message.lua
 
 ----------------------------------------------------------------------------------------------------------------
-# PROBLEM        | NONE          
+# PROBLEM        | WORKING       | messageServices.ts  <-- BUGS -->
+
+receiveMessage naay bugs
 ----------------------------------------------------------------------------------------------------------------
 # WORK           | PENDING       | load-messages
 # WORK           | PENDING       | seen-message

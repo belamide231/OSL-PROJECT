@@ -75,8 +75,7 @@ export class SocketService {
         previousChatlist.unshift(updatedChat);
         this._chatList.next(previousChatlist);
 
-        if(res.sender_id === res.chatmate_id) 
-          this.messageDelivered();
+        if(res.sender_id === res.chatmate_id)   this.messageDelivered();
       });
     });
 

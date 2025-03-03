@@ -12,8 +12,7 @@ import { stampString } from "../utilities/stamp";
 
 
 export const getActiveClientsService = async (role: string): Promise<{ status: number, result: object | null }> => {
-    if(!validRoles.includes(role))
-        return { status: 422, result: null };
+    if(!validRoles.includes(role))      return { status: 422, result: null };
 
     let actives: any = [];
     switch(role) {
@@ -58,8 +57,7 @@ export const getActiveClientsService = async (role: string): Promise<{ status: n
 
 
 export const sendMessageService = async (senderId: number, data: sendMessageDto): Promise<number | object> => {
-    if(isNaN(data.receiverId) || !validContentType.includes(data.contentType!) || !data.content || !data.uuid )
-        return 422;
+    if(!data.receiverId || !data.content || !data.uuid || !data.contentType )     return 422;
 
     try {
 
@@ -69,6 +67,7 @@ export const sendMessageService = async (senderId: number, data: sendMessageDto)
         let connections: string[] = [];
         connections = connections.concat(socketClients.clientConnections[senderId]);
         connections = connections.concat(socketClients.clientConnections[data.receiverId]);
+
         io.to(connections).emit('receive message', { messageId: results[0], senderId });
 
         io.to(socketClients.clientConnections[senderId]).emit('receive message', { messageId: results[0], chatmateId: data.receiverId });
@@ -92,7 +91,6 @@ export const migrateCachedMessages = async (data: { chatKey: string, users: numb
     const messagesTail: any = {};
     messages.forEach((x: any, i: number) => {
         sql += insertMessage(x);
-
         if(!messagesTail[x.sender_id] && messages[(messages.length - 1) - i].content_status !== 'sent') 
             messagesTail[x.sender_id] = messages[(messages.length - 1) - i];
     });
@@ -113,8 +111,8 @@ export const migrateCachedMessages = async (data: { chatKey: string, users: numb
 
 
 export const loadMessageService = async (data: loadMessageDto, userId: number, name: string): Promise<object | number> => {
-    if(isNaN(data.messageId) || isNaN(data.chatmateId))
-        return 422;
+    console.log(data);
+    if(isNaN(data.messageId) || isNaN(data.chatmateId))     return 422;
 
     try {
 
@@ -159,39 +157,37 @@ export const loadMessageService = async (data: loadMessageDto, userId: number, n
 
 export const loadChatListServices = async (user: User, chatListLength: number): Promise<object | number> => {
 
-    if(isNaN(chatListLength))
-        return 422;
+    if(isNaN(chatListLength))   return 422;
 
     try {
 
         let redisChatList: any = await redis.con.sendCommand(['FCALL', 'get_chats', '0', user.id.toString()]);
         let idsOfChatmates: any = [];
 
-        if(redisChatList !== null) {
+        if(redisChatList.length !== 0) {
 
             redisChatList = JSON.parse(redisChatList);
             redisChatList = redisChatList.map((x: any) => {
-
                 x[0].sender_id == user.id ? x[0].sender = user.name : x[0].receiver = user.name
                 idsOfChatmates.push(x[0].chatmate_id)
                 return x; 
             });
     
-            let chatmateNames = await mysql.promise().query('SELECT first_name as name FROM tbl_profiles WHERE FIND_IN_SET(user_id, ?)', [idsOfChatmates.toString()]) as any;
+            let [rows, result] = await mysql.promise().query('SELECT first_name as name FROM tbl_profiles WHERE FIND_IN_SET(user_id, ?)', [idsOfChatmates.toString()]) as any;
     
             idsOfChatmates.forEach((x: any, i: number) => {
+
                 const index = redisChatList.findIndex((x: any) => x[0].chatmate_id === idsOfChatmates[i]);
-                redisChatList[index][0].chatmate = chatmateNames[0][0].name;
-                redisChatList[index][0].sender === false ? redisChatList[index][0].sender = chatmateNames[0][0].name : redisChatList[index][0].receiver = chatmateNames[0][0].name;
-                chatmateNames[0][(chatmateNames[0].length - i) - 1]['id'] = x;
+                const rowsIndex = (rows.length - 1) - i;
+                redisChatList[index][0].chatmate = rows[rowsIndex].name;
+                redisChatList[index][0].sender === false ? redisChatList[index][0].sender = rows[rowsIndex].name : redisChatList[index][0].receiver = rows[rowsIndex].name;
+                rows[rowsIndex]['id'] = x;
             });
     
-            chatmateNames.length !== 0 && await redis.con.sendCommand(['FCALL', 'set_names', '0', JSON.stringify(chatmateNames[0])]);
+            rows.length !== 0 && await redis.con.sendCommand(['FCALL', 'set_names', '0', JSON.stringify(rows)]);
+        }
 
-        } else 
-            redisChatList = [];
-
-        let [mysqlChatList]: any[] = await mysql.promise().query('CALL get_chat_list(?, ?, ?)', [chatListLength, user.id, idsOfChatmates.toString()]);
+        let [mysqlChatList, result]: any[] = await mysql.promise().query('CALL get_chat_list(?, ?, ?)', [chatListLength, user.id, idsOfChatmates.toString()]) as any;
         Array.isArray(mysqlChatList) ? mysqlChatList.pop() : mysqlChatList = [];
 
         const chatList = redisChatList.concat(mysqlChatList);
@@ -209,8 +205,7 @@ export const loadChatListServices = async (user: User, chatListLength: number): 
 
 
 export const loadMessagesService = async (userId: number, data: getConversationDto): Promise<{ status: number, result: object | null }> => {
-    if(isNaN(data.chatmateId) || isNaN(data.messageLength))
-        return { status: 422, result: null };
+    if(isNaN(data.chatmateId) || isNaN(data.messageLength))     return { status: 422, result: null };
 
     try {
 
@@ -226,22 +221,21 @@ export const loadMessagesService = async (userId: number, data: getConversationD
 }
 
 
-export const deliveredChatService = async (userId: number): Promise<any> => {
-    if(!deliveredChatService)
-        return 422;
+export const deliveredChatService = async (userId: number): Promise<number | object> => {
+    if(!deliveredChatService)   return 422;
 
     try {
 
         const stamp = stampString();
-        const redisResult = await redis.con.sendCommand(['FCALL', 'delivered_message', '0', userId.toString()]) as [];
-        const mysqlResult = (await mysql.promise().query("CALL chat_delivered(?, ?)", [userId, stamp]) as any)[0].slice(0, 2)[0];
-        console.log(redisResult === null);
-        console.log(mysqlResult === null);
+        let redisResult = await redis.con.sendCommand(['FCALL', 'delivered_message', '0', userId.toString()]) as any;
+        if(redisResult === null)    redisResult = [];
+
+        const [[rows, metaData], schema] = await mysql.promise().query('CALL chat_delivered(?, CAST(? AS DATETIME))', [userId, stamp]) as any;
 
         let results: any = {};
 
         results = {
-            chatmates: [...new Set(redisResult.concat(mysqlResult.map((x: any) => x.chatmate_id)))],
+            chatmates: [...new Set(redisResult.concat(rows.map((x: any) => x.chatmate_id)))],
             stamp: new Date(stamp)
         };
 
@@ -257,8 +251,7 @@ export const deliveredChatService = async (userId: number): Promise<any> => {
 
 
 export const seenChatService = async (userId: number, chatmateId: number): Promise<number> => {
-    if(isNaN(chatmateId))
-        return 422;
+    if(isNaN(chatmateId))   return 422;
 
     try {
 

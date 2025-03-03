@@ -30,6 +30,6 @@ redis.register_function('get_chats', function (_, args)
     if #result > 0 then
         return cjson.encode(result)
     else
-        return nil
+        return {}
     end
 end)

@@ -74,7 +74,7 @@ redis.register_function('get_chats', function (_, args)
     if #result > 0 then
         return cjson.encode(result)
     else
-        return nil
+        return {}
     end
 end)
 
@@ -164,5 +164,9 @@ redis.register_function('delivered_message', function (_, args)
         chatmate_search_index = chatmate_search_index + 1
     end
 
-    return chatmates_to_notify
+    if #chatmates_to_notify == 0 then
+        return {}
+    else
+        return {chatmates_to_notify}
+    end
 end)

@@ -21,14 +21,15 @@ messageController
 
 
 .post('/sendMessage', isAuthenticated, upload.single('file'), dropboxUpload, async (req: Request, res: Response): Promise<any> => {
-    const response = await sendMessageService((req.user as any).id, req.body as sendMessageDto) as number | object;
-    return isFinite(response as number) ? res.sendStatus(response as number) : res.json(response);
+    const response = await sendMessageService((req.user as any).id, req.body as sendMessageDto) as any;
+    return isFinite(response) ? res.sendStatus(response) : res.json(response);
 })
 
 
 .post('/loadMessage', isAuthenticated, async (req: Request, res: Response): Promise<any> => {
-    const response = await loadMessageService(req.body as loadMessageDto, (req.user as any).id, (req.user as any).name) as number | object;
-    return isFinite(response as number) ? res.sendStatus(response as number) : res.json(response);
+    console.log(req.body);
+    const response = await loadMessageService(req.body as loadMessageDto, (req.user as any).id, (req.user as any).name) as any;
+    return isFinite(response) ? res.sendStatus(response) : res.json(response);
 })
 
 

@@ -172,65 +172,72 @@ END;;
 CREATE PROCEDURE chat_delivered(IN in_user_id INT, IN stamp DATETIME)
 BEGIN
 
-  DECLARE finished BIT DEFAULT FALSE;
+  DECLARE stamp DATETIME;
+  DECLARE done INT DEFAULT 0;
   DECLARE v INT;
-  DECLARE cur CURSOR FOR SELECT chatmate_id FROM list_to_notify;
-  DECLARE CONTINUE HANDLER FOR NOT FOUND SET finished = TRUE;
+  
+  DECLARE tbl_chatmates_id_cur CURSOR FOR 
+    SELECT chatmate_id FROM tbl_chatmates_id;
+  DECLARE tbl_notify_cm_cur CURSOR FOR 
+    SELECT chatmate_id FROM tbl_notify_cm;
+  
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
 
-  DROP TEMPORARY TABLE IF EXISTS list_to_notify;
-  CREATE TEMPORARY TABLE list_to_notify(chatmate_id INT);
-
-  INSERT INTO list_to_notify(chatmate_id) 
+  DROP TEMPORARY TABLE IF EXISTS tbl_chatmates_id;
+  CREATE TEMPORARY TABLE tbl_chatmates_id(chatmate_id INT);
+  
+  DROP TEMPORARY TABLE IF EXISTS tbl_notify_cm;
+  CREATE TEMPORARY TABLE tbl_notify_cm(chatmate_id INT);
+  
+  INSERT INTO tbl_chatmates_id(chatmate_id)
   SELECT 
     CASE
       WHEN sender_id != in_user_id THEN sender_id
       ELSE receiver_id
-    END
+    END AS chatmate_id
   FROM tbl_messages_head
-  WHERE sender_id = in_user_id 
-    OR receiver_id = in_user_id;
-
-  OPEN cur;
-
-    read_loop: LOOP
-
-      FETCH cur INTO v;
-
-      IF finished THEN
-        LEAVE read_loop;
-      END IF;
-
-      SET @content_status = (
-        SELECT content_status 
-        FROM tbl_messages 
-        WHERE id = (
-          SELECT message_id
-          FROM tbl_messages_head
-          WHERE (sender_id = in_user_id AND receiver_id = v)
-            OR (sender_id = v AND receiver_id = in_user_id)
-        )
-      );
-      
-      IF @content_status = 'sent' THEN
-
-        INSERT INTO list_to_notify(chatmate_id) VALUES(v);
-
-        UPDATE tbl_messages
-        SET 
-          content_status = 'delivered',
-          delivered_at = stamp
-        WHERE receiver_id = in_user_id
-          AND sender_id = v
-          AND content_status = 'sent'; 
-
-      END IF;
-
-    END LOOP;
-
-  CLOSE cur;
-
-  SELECT * FROM list_to_notify;
-
+  WHERE sender_id = in_user_id OR receiver_id = in_user_id;
+  
+  SET done = 0;
+  OPEN tbl_chatmates_id_cur;
+  read_loop1: LOOP
+    FETCH tbl_chatmates_id_cur INTO v;
+    IF done THEN
+      LEAVE read_loop1;
+    END IF;
+    
+    INSERT INTO tbl_notify_cm(chatmate_id)
+    SELECT 
+      CASE
+        WHEN sender_id != in_user_id THEN sender_id
+        ELSE receiver_id
+      END AS chatmate_id
+    FROM tbl_messages
+    WHERE ((sender_id = in_user_id AND receiver_id = v)
+       OR (sender_id = v AND receiver_id = in_user_id))
+      AND content_status = 'sent'
+    LIMIT 1;
+  END LOOP;
+  CLOSE tbl_chatmates_id_cur;
+  
+  SET done = 0;
+  OPEN tbl_notify_cm_cur;
+  read_loop2: LOOP
+    FETCH tbl_notify_cm_cur INTO v;
+    IF done THEN
+      LEAVE read_loop2;
+    END IF;
+    
+    UPDATE tbl_messages
+    SET content_status = 'delivered', delivered_at = stamp
+    WHERE ((sender_id = in_user_id AND receiver_id = v)
+       OR (sender_id = v AND receiver_id = in_user_id))
+      AND content_status = 'sent'
+      AND sent_at <= stamp;
+  END LOOP;
+  CLOSE tbl_notify_cm_cur;
+  
+  SELECT * FROM tbl_notify_cm;
 END;;
 
 
