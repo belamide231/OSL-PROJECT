@@ -169,10 +169,9 @@ END;;
 
 
 
-CREATE PROCEDURE chat_delivered(IN in_user_id INT)
+CREATE PROCEDURE chat_delivered(IN in_user_id INT, IN stamp DATETIME)
 BEGIN
 
-  DECLARE stamp DATETIME DEFAULT NOW();
   DECLARE done INT DEFAULT 0;
   DECLARE v INT;
   
@@ -238,7 +237,6 @@ BEGIN
   END LOOP;
   CLOSE tbl_notify_cm_cur;
   
-  SELECT stamp;
   SELECT * FROM tbl_notify_cm;
 END;;
 

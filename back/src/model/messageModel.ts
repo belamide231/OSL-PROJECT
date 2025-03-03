@@ -1,10 +1,10 @@
-import { stamp } from "../utilities/stamp";
+import { stamp, stampString } from "../utilities/stamp";
 
 export class messageModel {
     
     public id: any = null;
     public content_status: string = 'sent';
-    public sent_at: string = stamp.toISOString();
+    public sent_at: string = stampString();
     public delivered_at: any = null;
     public seen_at: any = null;
     public company_name: any = null;

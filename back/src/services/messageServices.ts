@@ -8,6 +8,7 @@ import { setCachedTimer } from "../utilities/bullmq";
 import { insertMessage } from "../calls/InsertMessage";
 import { loadMessageDto } from "../dto/messageController/loadMessageDto";
 import { User } from "../interfaces/user";
+import { stampString } from "../utilities/stamp";
 
 
 export const getActiveClientsService = async (role: string): Promise<{ status: number, result: object | null }> => {
@@ -231,10 +232,20 @@ export const deliveredChatService = async (userId: number): Promise<any> => {
 
     try {
 
-        // TANGTANGONON NATO ANG MYSQL NYA EH PULI ANG REDIS
+        const stamp = stampString();
+        const redisResult = await redis.con.sendCommand(['FCALL', 'delivered_message', '0', userId.toString()]) as [];
+        const mysqlResult = (await mysql.promise().query("CALL chat_delivered(?, ?)", [userId, stamp]) as any)[0].slice(0, 2)[0];
+        console.log(redisResult === null);
+        console.log(mysqlResult === null);
 
-        const mysqlResult = (await mysql.promise().query("CALL chat_delivered(?)", [userId]) as any)[0].slice(0, 2);
-        return mysqlResult;
+        let results: any = {};
+
+        results = {
+            chatmates: [...new Set(redisResult.concat(mysqlResult.map((x: any) => x.chatmate_id)))],
+            stamp: new Date(stamp)
+        };
+
+        return results;
 
     } catch (err) {
 
