@@ -1,43 +1,44 @@
 redis.register_function('seen_message', function (_, args)
 
-    local uid = tostring(args[1])
-    local cid = tostring(args[2])
+    local user_id = tonumber(args[1])
+    local chatmate_id = tonumber(args[2])
     local stamp = tostring(args[3])
-    local toNotify = 0
 
-    local chatId = redis.call('GET', string.format('chats:participants:%d:%d', uid, cid))
-    if chatId == false then
+    local chat_key = redis.call('GET', string.format('chats:participants:%d:%d', user_id, chatmate_id))
+    if chat_key == nil then
         return nil
     end
 
-    local messages = redis.call('LRANGE', chatId, '0', '-1')
-    if messages == 0 then
-        return nil
-    end
+    local updated = false
+    local counter = 0
 
-    for i, msg in ipairs(messages) do
-
-        local message = cjson.decode(msg)
-        if message.content_status ~= 'seen' then
-            goto end_loop
+    while true do
+        local messages = redis.call('LRANGE', chat_key, counter, counter)
+        if #messages == 0 then
+            break
         end
 
-        if toNotify == 0 then
-            toNotify = tonumber(cid)
+        local message = cjson.decode(messages[1])
+        if message.content_status == 'seen' then
+            break
+        end
+
+        if message.delivered_at == nil then
+            message.delivered_at = stamp
         end
 
         message.content_status = 'seen'
-        message.delivered_at = stamp
-        redis.call('LSET', chatId, i-1, cjson.encode(message))
+        message.seen_at = stamp
 
-        ::end_loop::
+        redis.call('LSET', chat_key, counter, cjson.encode(message))
+
+        updated = true
+        counter = counter + 1
     end
 
-    -- RETURNS AN ARRAY
-
-    if toNotify == 0 then
-        return nil
+    if updated then
+        return chatmate_id
     else
-        return toNotify
+        return nil
     end
 end)

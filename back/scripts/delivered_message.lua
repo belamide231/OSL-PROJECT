@@ -50,6 +50,6 @@ redis.register_function('delivered_message', function (_, args)
     if #chatmates_to_notify == 0 then
         return {}
     else
-        return {chatmates_to_notify}
+        return chatmates_to_notify
     end
 end)

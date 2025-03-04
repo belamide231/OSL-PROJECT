@@ -10,8 +10,7 @@ const renewAccessToken = async (): Promise<string> => {
     try {
         const response = await axios.post(
             "https://api.dropbox.com/oauth2/token",
-            null,
-            {
+            null,   {
                 params: {
                     refresh_token: process.env.DROPBOX_TOKEN,
                     grant_type: "refresh_token",

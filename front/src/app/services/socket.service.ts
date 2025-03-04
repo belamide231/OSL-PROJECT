@@ -60,11 +60,16 @@ export class SocketService {
 
     this.socket.on('receive message', async (data) => {
 
+      if(!data.chatmateId) {
+        return;
+      }
+
       this.api.loadMessage(data.messageId, data.chatmateId).subscribe((res: any) => {
 
         const chatIndex = this._chatList.value.findIndex((x: any) => x[0].chatmate_id === res.chatmate_id);
-        if(chatIndex === -1)
+        if(chatIndex === -1) {
           return;
+        }
 
         const previousChatlist = this._chatList.value;
         const updatedChat = this._chatList.value[chatIndex];
@@ -75,7 +80,9 @@ export class SocketService {
         previousChatlist.unshift(updatedChat);
         this._chatList.next(previousChatlist);
 
-        if(res.sender_id === res.chatmate_id)   this.messageDelivered();
+        if(res.sender_id === res.chatmate_id) {
+          this.messageDelivered();
+        };
       });
     });
 
@@ -141,7 +148,9 @@ export class SocketService {
 
     this.socket.on('typing message', (typingChatmateId: number) => {
       this._typingChatmates.push(typingChatmateId);
-      if(this._typingChatmates.indexOf(typingChatmateId) === -1) return;
+      if(this._typingChatmates.indexOf(typingChatmateId) === -1) {
+        return;
+      }
 
       this._typingChatmates.includes(typingChatmateId) && this.chatmateId === typingChatmateId ? this._isTyping.next(true) : this._isTyping.next(false);
     });
@@ -150,7 +159,9 @@ export class SocketService {
     this.socket.on('blank message', (typingChatmateId: number) => {
       const index = this._typingChatmates.indexOf(typingChatmateId);
       
-      if(index === -1) return;
+      if(index === -1) {
+        return;
+      }
 
       this._typingChatmates.splice(index, 1);
       
@@ -162,8 +173,11 @@ export class SocketService {
 
       disconnectingId === this.chatmateId && this._isTyping.next(false);
       const actives = this._actives.value;
-      const index = actives.findIndex(x => x.id === disconnectingId);
-      if(index === -1) return;
+
+      const index = actives.findIndex((x: any) => x.id !== undefined && x.id === disconnectingId);
+      if(index === -1) {
+        return;
+      }
       
       actives.splice(index, 1);
       this._actives.next(actives);

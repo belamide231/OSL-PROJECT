@@ -1,3 +1,4 @@
+import { ConnectionAcquireTimeoutError } from "sequelize";
 import { io, socketClients } from "../app";
 import { socketUser } from "../interfaces/socketUser";
 import { deliveredChatService, seenChatService } from "../services/messageServices";
@@ -17,12 +18,21 @@ export const seenChat = async (user: socketUser, data: any): Promise<void> => {
 
 
 export const messageDelivered = async (user: socketUser): Promise<void> => {
-
     const result = await deliveredChatService(user.id) as any;    
-    if(isFinite(result) || result.chatmates.length === 0) 
-        return;
 
-    io.to(result.chatmates).emit('message delivered', { chatmateId: user.id, stamp: result.stamp });
+    if(isFinite(result) || result.chatmates.length === 0) {
+        return;
+    }
+
+    let connections: any = [];
+    result.chatmates.map((x: number) => {
+        const clientConnections = socketClients.clientConnections[x];
+        if(clientConnections !== undefined) {
+            connections = connections.concat(socketClients.clientConnections[x]);
+        }
+    });
+
+    io.to(connections).emit('message delivered', { chatmateId: user.id, stamp: result.stamp });
 }
 
 

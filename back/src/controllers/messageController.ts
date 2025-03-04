@@ -27,7 +27,6 @@ messageController
 
 
 .post('/loadMessage', isAuthenticated, async (req: Request, res: Response): Promise<any> => {
-    console.log(req.body);
     const response = await loadMessageService(req.body as loadMessageDto, (req.user as any).id, (req.user as any).name) as any;
     return isFinite(response) ? res.sendStatus(response) : res.json(response);
 })

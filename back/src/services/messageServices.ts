@@ -1,7 +1,6 @@
 import { mysql, socketClients, io, redis } from "../app";
 import { getConversationDto } from "../dto/messageController/getConversationDto";
 import { sendMessageDto } from "../dto/messageController/sendMessageDto";
-import { validContentType } from "../validations/validContentType";
 import { validRoles } from "../validations/validRoles";
 import { messageModel } from "../model/messageModel";
 import { setCachedTimer } from "../utilities/bullmq";
@@ -12,7 +11,9 @@ import { stampString } from "../utilities/stamp";
 
 
 export const getActiveClientsService = async (role: string): Promise<{ status: number, result: object | null }> => {
-    if(!validRoles.includes(role))      return { status: 422, result: null };
+    if(!validRoles.includes(role)) {
+        return { status: 422, result: null };
+    }
 
     let actives: any = [];
     switch(role) {
@@ -95,7 +96,7 @@ export const migrateCachedMessages = async (data: { chatKey: string, users: numb
             messagesTail[x.sender_id] = messages[(messages.length - 1) - i];
     });
 
-    Object.values(messagesTail).forEach((x: any) => sql = `CALL migration_status(${x.sender_id}, ${x.receiver_id}, '${x.content_status}', ${x.delivered_at}, ${x.seen_at});\n` + sql);
+    Object.values(messagesTail).forEach((x: any) => sql = `CALL migration_status(${x.sender_id}, ${x.receiver_id}, '${x.content_status}', ${x.delivered_at === null ? null: `CAST('${x.delivered_at}' AS DATETIME)`}, ${x.seen_at === null ? null : `CAST('${x.delivered_at}' AS DATETIME)`});\n` + sql);
 
     try {
 
@@ -111,8 +112,9 @@ export const migrateCachedMessages = async (data: { chatKey: string, users: numb
 
 
 export const loadMessageService = async (data: loadMessageDto, userId: number, name: string): Promise<object | number> => {
-    console.log(data);
-    if(isNaN(data.messageId) || isNaN(data.chatmateId))     return 422;
+    if(isNaN(data.messageId) || isNaN(data.chatmateId)) {
+        return 422;
+    }
 
     try {
 
@@ -157,7 +159,9 @@ export const loadMessageService = async (data: loadMessageDto, userId: number, n
 
 export const loadChatListServices = async (user: User, chatListLength: number): Promise<object | number> => {
 
-    if(isNaN(chatListLength))   return 422;
+    if(isNaN(chatListLength)) {
+        return 422;
+    }
 
     try {
 
@@ -205,7 +209,9 @@ export const loadChatListServices = async (user: User, chatListLength: number): 
 
 
 export const loadMessagesService = async (userId: number, data: getConversationDto): Promise<{ status: number, result: object | null }> => {
-    if(isNaN(data.chatmateId) || isNaN(data.messageLength))     return { status: 422, result: null };
+    if(isNaN(data.chatmateId) || isNaN(data.messageLength)) {
+        return { status: 422, result: null };
+    }
 
     try {
 
@@ -222,20 +228,28 @@ export const loadMessagesService = async (userId: number, data: getConversationD
 
 
 export const deliveredChatService = async (userId: number): Promise<number | object> => {
-    if(!deliveredChatService)   return 422;
+    if(!userId) {
+        return 422;
+    }
 
     try {
 
         const stamp = stampString();
         let redisResult = await redis.con.sendCommand(['FCALL', 'delivered_message', '0', userId.toString()]) as any;
-        if(redisResult === null)    redisResult = [];
+        if(redisResult === null) {
+            redisResult = [];
+        }
 
+        //  # REQUIRED
+        //    KANI NGA LINE DAPAT EH MIGRATE NIS PAG LOAD UG MESSAGES
         const [[rows, metaData], schema] = await mysql.promise().query('CALL chat_delivered(?, CAST(? AS DATETIME))', [userId, stamp]) as any;
 
-        let results: any = {};
-
-        results = {
-            chatmates: [...new Set(redisResult.concat(rows.map((x: any) => x.chatmate_id)))],
+        const results: any = {
+            chatmates: [...new Set(redisResult.concat(rows.map((x: any) => {
+                if(x !== undefined) {
+                    x.chatmate_id;
+                }
+            })))],
             stamp: new Date(stamp)
         };
 
@@ -250,12 +264,22 @@ export const deliveredChatService = async (userId: number): Promise<number | obj
 }
 
 
-export const seenChatService = async (userId: number, chatmateId: number): Promise<number> => {
-    if(isNaN(chatmateId))   return 422;
+export const seenChatService = async (seenerId: number, chatmateId: number): Promise<number> => {
+    if(isNaN(chatmateId)) {
+        return 422;
+    }
 
     try {
 
-        const result = (await mysql.promise().query('CALL seen_chat(?, ?)', [userId, chatmateId]) as any)[0][0][0];
+        const stamp = stampString();
+        const redisResult = await redis.con.sendCommand(['FCALL', 'seen_message', '0', seenerId.toString(), chatmateId.toString(), stamp]);
+        console.log(redisResult);
+
+        //  # REQUIRED
+        //    KANI DAPAT SA MIGRATIONS RANI, UG SA LOAD MESSAGES
+        const result = (await mysql.promise().query('CALL seen_chat(?, ?)', [seenerId, chatmateId]) as any)[0][0][0];
+        console.log(result);
+
         return result;
 
     } catch (err) {

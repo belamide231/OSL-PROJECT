@@ -23,6 +23,7 @@ export const setCachedTimer = async (data: { chatKey: string, users: number[] })
         data 
     }, {
         delay: 1000 * 60 * 60,
+        // delay: 1000 * 3,
         jobId: data.chatKey
     });
 }
