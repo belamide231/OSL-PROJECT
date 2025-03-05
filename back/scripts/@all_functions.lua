@@ -139,6 +139,8 @@ redis.register_function('delivered_message', function (_, args)
             break
         end
 
+        local updated = false
+
         local message_search_index = 0
         while true do
 
@@ -149,14 +151,17 @@ redis.register_function('delivered_message', function (_, args)
             end
 
             local object_message = cjson.decode(stringified_messages[1])
-            if object_message.content_status == 'delivered' then
+            if object_message.content_status == 'delivered' or object_message.content_status == 'seen' then
                 break
             end
 
             object_message.content_status = 'delivered'
             redis.call('LSET', chat_key, message_search_index, cjson.encode(object_message))
 
-            table.insert(chatmates_to_notify, tonumber(chatmates[1]))
+            if updated == false then
+                updated = true
+                table.insert(chatmates_to_notify, tonumber(chatmates[1]))
+            end
 
             message_search_index = message_search_index + 1
         end
@@ -178,7 +183,7 @@ redis.register_function('seen_message', function (_, args)
     local stamp = tostring(args[3])
 
     local chat_key = redis.call('GET', string.format('chats:participants:%d:%d', user_id, chatmate_id))
-    if chat_key == nil then
+    if chat_key == nil or chat_key == false then
         return nil
     end
 
@@ -186,6 +191,7 @@ redis.register_function('seen_message', function (_, args)
     local counter = 0
 
     while true do
+
         local messages = redis.call('LRANGE', chat_key, counter, counter)
         if #messages == 0 then
             break
@@ -200,12 +206,15 @@ redis.register_function('seen_message', function (_, args)
             message.delivered_at = stamp
         end
 
+        if updated == false then
+            updated = true
+        end
+
         message.content_status = 'seen'
         message.seen_at = stamp
 
         redis.call('LSET', chat_key, counter, cjson.encode(message))
 
-        updated = true
         counter = counter + 1
     end
 

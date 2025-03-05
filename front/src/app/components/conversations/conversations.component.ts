@@ -90,10 +90,18 @@ export class ConversationComponent implements AfterViewInit {
 
   public getStatusAndStamp = (object: any): any => {
 
-    if(object.status === 'sending') return 'sending';
-    if(object.content_status === 'sent') return `${object.content_status} at ${this.getDate(object.sent_at)}`;
-    if(object.content_status === 'delivered') return `${object.content_status} at ${this.getDate(object.delivered_at)}`;
-    if(object.content_status === 'seen') return `${object.content_status} at ${this.getDate(object.seen_at)}`;
+    switch(object.status) {
+      case 'sending':
+        return 'sending';
+      case 'sent':
+        return `${object.content_status} at ${this.getDate(object.sent_at)}`;
+      case 'delivered':
+        return `${object.content_status} at ${this.getDate(object.delivered_at)}`;
+      case 'seen':
+        return `${object.content_status} at ${this.getDate(object.seen_at)}`;
+      default:
+        return 'unknown status';
+    }
   }
 
   public timePassed = (stamp: string) => {
@@ -117,7 +125,10 @@ export class ConversationComponent implements AfterViewInit {
 
     this.socket.chatmateId = chatmateId;
     this.socket.checkIfChatmateIsTyping(chatmateId);
-    this.isUserTyping = false && this.newMessage !== '';
+
+    if(this.newMessage !== '') {
+      this.isUserTyping = false;
+    }
 
     this.chat = this.chatList[this.chatList.findIndex((x: any) => x[0].chatmate_id === this.socket.chatmateId)];
     

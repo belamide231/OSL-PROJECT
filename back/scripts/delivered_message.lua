@@ -22,6 +22,8 @@ redis.register_function('delivered_message', function (_, args)
             break
         end
 
+        local updated = false
+
         local message_search_index = 0
         while true do
 
@@ -32,14 +34,17 @@ redis.register_function('delivered_message', function (_, args)
             end
 
             local object_message = cjson.decode(stringified_messages[1])
-            if object_message.content_status == 'delivered' then
+            if object_message.content_status == 'delivered' or object_message.content_status == 'seen' then
                 break
             end
 
             object_message.content_status = 'delivered'
             redis.call('LSET', chat_key, message_search_index, cjson.encode(object_message))
 
-            table.insert(chatmates_to_notify, tonumber(chatmates[1]))
+            if updated == false then
+                updated = true
+                table.insert(chatmates_to_notify, tonumber(chatmates[1]))
+            end
 
             message_search_index = message_search_index + 1
         end

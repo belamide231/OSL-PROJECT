@@ -22,8 +22,8 @@ export const setCachedTimer = async (data: { chatKey: string, users: number[] })
     await queue.add('chat', { 
         data 
     }, {
-        delay: 1000 * 60 * 60,
-        // delay: 1000 * 3,
+        // delay: 1000 * 60 * 60,
+        delay: 1000 * 5,
         jobId: data.chatKey
     });
 }

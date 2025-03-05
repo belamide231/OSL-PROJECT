@@ -11,14 +11,24 @@ END;;
 
 
 
-CREATE PROCEDURE insert_message(IN in_message_id INT, IN in_content_status VARCHAR(20), IN in_sent_at DATETIME, IN in_delivered_at DATETIME, IN in_seen_at DATETIME, IN in_company_name VARCHAR(99), IN in_sender_id INT, IN in_receiver_id INT, IN in_content_type VARCHAR(10), IN in_content VARCHAR(7999))
-BEGIN
+CREATE PROCEDURE insert_message(
+  IN in_message_id INT, 
+  IN in_content_status VARCHAR(20), 
+  IN in_sent_at DATETIME,
+  IN in_delivered_at DATETIME, 
+  IN in_seen_at DATETIME, 
+  IN in_company_name VARCHAR(100), 
+  IN in_sender_id INT, 
+  IN in_receiver_id INT, 
+  IN in_content_type VARCHAR(10), 
+  IN in_content VARCHAR(7999)
+) BEGIN
 
   DECLARE prev_message_id INT DEFAULT 0;
   DECLARE prev_sent_at DATETIME;
 
   INSERT INTO tbl_messages(id, content_status, sent_at, delivered_at, seen_at, company_name, sender_id, receiver_id, content_type, content) 
-  VALUES (in_message_id, in_content_status, in_sent_at, in_delivered_at, in_seen_at, in_company_name, in_sender_id, in_receiver_id, in_content_type, in_content);
+  VALUES (in_message_id, in_content_status, in_sent_at, IFNULL(in_delivered_at, NULL), IFNULL(in_seen_at, NULL), IFNULL(in_company_name, NULL), in_sender_id, in_receiver_id, in_content_type, in_content);
 
   SELECT message_id, sent_at INTO prev_message_id, prev_sent_at
   FROM tbl_messages_head
@@ -70,8 +80,13 @@ END;;
 
 
 
-CREATE PROCEDURE migration_status(IN in_sender_id INT, IN in_receiver_id INT, IN in_status VARCHAR(20), IN in_delivered_at DATETIME, IN in_seen_at DATETIME)
-BEGIN
+CREATE PROCEDURE migration_status(
+  IN in_sender_id INT, 
+  IN in_receiver_id INT, 
+  IN in_status VARCHAR(20), 
+  IN in_delivered_at DATETIME, 
+  IN in_seen_at DATETIME
+) BEGIN
 
   DECLARE latest_status VARCHAR(20);
   SET latest_status = (

@@ -12,9 +12,9 @@ UPDATE tbl_profiles SET first_name = 'IBM ADMIN' WHERE user_id = 4;
 
 
 
-CALL insert_message(999999999, 'sent', NOW() - INTERVAL 3 MINUTE, NULL, NULL, NULL, 1, 3, 'text', 'HELLO GIS ADMIN');
-CALL insert_message(1000000000, 'sent', NOW() - INTERVAL 2 MINUTE, NULL, NULL, NULL, 1, 2, 'text', 'HELLO JET ADMIN');
-CALL insert_message(1000000001, 'sent', NOW() - INTERVAL 1 MINUTE, NULL, NULL, NULL, 1, 4, 'text', 'HELLO IBM ADMIN');
+CALL insert_message(999999999, 'sent', NOW() - INTERVAL 8 HOURS, NULL, NULL, NULL, 1, 3, 'text', 'HELLO GIS ADMIN');
+CALL insert_message(1000000000, 'sent', NOW() - INTERVAL 9 MINUTE, NULL, NULL, NULL, 1, 2, 'text', 'HELLO JET ADMIN');
+CALL insert_message(1000000001, 'sent', NOW() - INTERVAL 19 MINUTE, NULL, NULL, NULL, 1, 4, 'text', 'HELLO IBM ADMIN');
 
 CALL insert_message(1000000002, 'sent', NOW(), NULL, NULL, NULL, 1, 2, 'text', 'HELLO IBM ADMIN');
 CALL insert_message(1000000003, 'sent', NOW(), NULL, NULL, NULL, 1, 2, 'text', 'HELLO IBM ADMIN');

@@ -8,6 +8,7 @@ import { insertMessage } from "../calls/InsertMessage";
 import { loadMessageDto } from "../dto/messageController/loadMessageDto";
 import { User } from "../interfaces/user";
 import { stampString } from "../utilities/stamp";
+import { migrationStatus } from "../calls/migrationStatus";
 
 
 export const getActiveClientsService = async (role: string): Promise<{ status: number, result: object | null }> => {
@@ -90,15 +91,23 @@ export const migrateCachedMessages = async (data: { chatKey: string, users: numb
     let sql = '';
     const messages = JSON.parse((await redis.con.sendCommand(['FCALL', 'get_chat', '0', data.chatKey]) as any))[0];
     const messagesTail: any = {};
+
     messages.forEach((x: any, i: number) => {
+
         sql += insertMessage(x);
-        if(!messagesTail[x.sender_id] && messages[(messages.length - 1) - i].content_status !== 'sent') 
+
+        if(!messagesTail[x.sender_id] && messages[(messages.length - 1) - i].content_status !== 'sent') {
             messagesTail[x.sender_id] = messages[(messages.length - 1) - i];
+        }
     });
 
-    Object.values(messagesTail).forEach((x: any) => sql = `CALL migration_status(${x.sender_id}, ${x.receiver_id}, '${x.content_status}', ${x.delivered_at === null ? null: `CAST('${x.delivered_at}' AS DATETIME)`}, ${x.seen_at === null ? null : `CAST('${x.delivered_at}' AS DATETIME)`});\n` + sql);
+    Object.values(messagesTail).forEach((x: any) => {
+        sql = migrationStatus(x) + sql;
+    });
 
     try {
+
+        console.log(sql);
 
         await mysql.promise().query(sql);
         await redis.con.sendCommand(['FCALL', 'delete_chat', '0', JSON.stringify(data)]);
@@ -235,25 +244,25 @@ export const deliveredChatService = async (userId: number): Promise<number | obj
     try {
 
         const stamp = stampString();
-        let redisResult = await redis.con.sendCommand(['FCALL', 'delivered_message', '0', userId.toString()]) as any;
+        let redisResult = await redis.con.sendCommand(['FCALL', 'delivered_message', '0', userId.toString()]);
         if(redisResult === null) {
             redisResult = [];
         }
 
         //  # REQUIRED
         //    KANI NGA LINE DAPAT EH MIGRATE NIS PAG LOAD UG MESSAGES
-        const [[rows, metaData], schema] = await mysql.promise().query('CALL chat_delivered(?, CAST(? AS DATETIME))', [userId, stamp]) as any;
+        // const [[rows, metaData], schema] = await mysql.promise().query('CALL chat_delivered(?, CAST(? AS DATETIME))', [userId, stamp]) as any;
 
-        const results: any = {
-            chatmates: [...new Set(redisResult.concat(rows.map((x: any) => {
-                if(x !== undefined) {
-                    x.chatmate_id;
-                }
-            })))],
-            stamp: new Date(stamp)
-        };
+        // const results: any = {
+        //     chatmates: [...new Set(redisResult.concat(rows.map((x: any) => {
+        //         if(x !== undefined) {
+        //             x.chatmate_id;
+        //         }
+        //     })))],
+        //     stamp: new Date(stamp)
+        // };
 
-        return results;
+        return { chatmates: redisResult, stamp: new Date(stamp) };
 
     } catch (err) {
 
@@ -264,7 +273,7 @@ export const deliveredChatService = async (userId: number): Promise<number | obj
 }
 
 
-export const seenChatService = async (seenerId: number, chatmateId: number): Promise<number> => {
+export const seenChatService = async (seenerId: number, chatmateId: number): Promise<number | { timestamp: string }> => {
     if(isNaN(chatmateId)) {
         return 422;
     }
@@ -272,15 +281,12 @@ export const seenChatService = async (seenerId: number, chatmateId: number): Pro
     try {
 
         const stamp = stampString();
-        const redisResult = await redis.con.sendCommand(['FCALL', 'seen_message', '0', seenerId.toString(), chatmateId.toString(), stamp]);
-        console.log(redisResult);
+        await redis.con.sendCommand(['FCALL', 'seen_message', '0', seenerId.toString(), chatmateId.toString(), stamp]);
+        
+        // const result = (await mysql.promise().query('CALL seen_chat(?, ?)', [seenerId, chatmateId]) as any)[0][0][0];
+        // console.log(result);
 
-        //  # REQUIRED
-        //    KANI DAPAT SA MIGRATIONS RANI, UG SA LOAD MESSAGES
-        const result = (await mysql.promise().query('CALL seen_chat(?, ?)', [seenerId, chatmateId]) as any)[0][0][0];
-        console.log(result);
-
-        return result;
+        return { timestamp: stamp };
 
     } catch (err) {
 

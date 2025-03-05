@@ -26,6 +26,7 @@ import { pageController } from './controllers/pageController';
 import { companyController } from './controllers/companyController';
 import { widgetController } from './controllers/widgetController';
 import { cookiesParser } from './utilities/cookieParser';
+import { stampString } from './utilities/stamp';
 
 export const tmp = path.join(__dirname, '../tmp');
 export const level = getLevelConnection();
@@ -40,6 +41,12 @@ const origin = process.env.CLOUD_HOST ? process.env.DNS : [
     'http://localhost:4200',
     'http://localhost:3000'
 ];
+
+(async () => {
+    const s = stampString();
+    console.log(s);
+    console.log(new Date(s));
+})();
 
 const app = express();
 const store = MemoryStore(session);

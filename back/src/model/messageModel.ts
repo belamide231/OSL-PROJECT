@@ -1,4 +1,4 @@
-import { stamp, stampString } from "../utilities/stamp";
+import { stampString } from "../utilities/stamp";
 
 export class messageModel {
     

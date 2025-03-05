@@ -1,9 +1,9 @@
 export interface socketClientsInterface {
     clientConnections: {
-        [key:number]: string[]
+        [key:number]:   string[]
     },
-    adminsId: number[],
-    accountsId: number[],
-    superUsersId: number[],
-    usersId: number[]
+    adminsId:           number[],
+    accountsId:         number[],
+    superUsersId:       number[],
+    usersId:            number[]
 };

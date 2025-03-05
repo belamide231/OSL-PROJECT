@@ -48,10 +48,19 @@ export class SocketService {
 
     this.socket.on('someone joined', (client: any) => {
       const actives = this._actives.value;
-      if(actives.length === 0) return;
+      if(!Array.isArray(actives)) {
+        return;
+      }
 
-      const index = actives.findIndex((x: any) => x.id === client.id);
-      if(index !== -1) return;
+      const index = actives.findIndex((x: any): any => {
+        if(x !== null && x.id !== undefined) {
+          return x.id === client.id
+        }
+      });
+
+      if(index !== -1) {
+        return;
+      }
 
       const updatedActives: any = this._actives.value.push(client);
       this._actives.next(updatedActives);
@@ -92,37 +101,42 @@ export class SocketService {
       const previousChatList = this._chatList.value;
       const targetChat = previousChatList.findIndex(x => x[0].chatmate_id === data.chatmateId);
 
-      if(targetChat === -1) 
+      if(targetChat === -1) {
         return;
+      }
 
       previousChatList[targetChat].map((x: any) => {
-        if(x.chatmate_id !== x.sender_id && x.content_status === 'sent' && new Date(x.sent_at) <= new Date(data.stamp)) 
+        if(x.chatmate_id !== x.sender_id && x.content_status === 'sent' && new Date(x.sent_at) <= new Date(data.stamp)) {
           x.content_status = 'delivered', x.delivered_at = data.stamp;
+        }
+
         return x;
       });
 
       this._chatList.next(previousChatList);
 
       const targetMessage = this._chatList.value[this._chatList.value.findIndex(x => x[0].chatmate_id === this.chatmateId)][0];
-      if(targetMessage.chatmate_id !== this.chatmateId)
+      if(targetMessage.chatmate_id !== this.chatmateId) {
         return
+      }
 
-      const seener = targetMessage.chatmate_id !== targetMessage.sender_id ? targetMessage.sender_id : targetMessage.receiver_id;
-      if(seener === targetMessage.sender_id)
-        return;
-
-      this.seenChat(targetMessage.chatmate_id, true);
+      const userId = targetMessage.sender_id !== targetMessage.chatmate_id ? targetMessage.sender_id : targetMessage.receiver_id;
+      if(userId === data.currentChatmateId) {
+        this.seenChat(targetMessage.chatmate_id, true);
+      }
     });
 
 
     this.socket.on('seen message', (data) => {
-      
+
       const chatList = this._chatList.value;
       const chatIndex = chatList.findIndex(x => x[0].chatmate_id === data.chatmate_id);
+
       chatList[chatIndex].map((x: any) => {
         
-        if(x.sender_id !== x.chatmate_id && ['delivered'].includes(x.content_status) && new Date(x.sent_at) <= new Date(data.timestamp))
+        if(x.sender_id !== x.chatmate_id && ['delivered'].includes(x.content_status) && new Date(x.sent_at) <= new Date(data.timestamp)) {
           x.content_status = 'seen', x.seen_at = data.timestamp;
+        }
         
         return x;
       });
@@ -133,8 +147,9 @@ export class SocketService {
 
         chatList[chatIndex].map((x: any) => {
 
-          if(x.sender_id === x.chatmate_id && ['delivered', 'sent'].includes(x.content_status) && new Date(x.sent_at) <= new Date(data.timestamp))
+          if(x.sender_id === x.chatmate_id && ['delivered', 'sent'].includes(x.content_status) && new Date(x.sent_at) <= new Date(data.timestamp)) {
             x.content_status = 'seen';
+          }
 
           return x;
         });
@@ -165,16 +180,29 @@ export class SocketService {
 
       this._typingChatmates.splice(index, 1);
       
-      if(typingChatmateId === this.chatmateId) this._isTyping.next(false);
+      if(typingChatmateId === this.chatmateId) {
+        this._isTyping.next(false);
+      }
     });
 
 
     this.socket.on('disconnected', (disconnectingId: number) => {
 
-      disconnectingId === this.chatmateId && this._isTyping.next(false);
+      if(disconnectingId === this.chatmateId) {
+        this._isTyping.next(false);
+      }
+
       const actives = this._actives.value;
 
-      const index = actives.findIndex((x: any) => x.id !== undefined && x.id === disconnectingId);
+      if(!Array.isArray(actives)) {
+        return;
+      }
+
+      const index = actives.findIndex((x: any): any => {
+        if(x !== null && x.id !== undefined) {
+          return x.id === disconnectingId;
+        }
+      });
       if(index === -1) {
         return;
       }
@@ -193,7 +221,7 @@ export class SocketService {
 
   public messageDelivered = () => {
 
-    this.socket.emit("message delivered");
+    this.socket.emit("message delivered", this.chatmateId);
   }
 
 
@@ -218,19 +246,22 @@ export class SocketService {
   private loadChatList = () => {
     this.api.loadChatList(this._chatList.value.length).subscribe(async (res: any) => {
 
-      if(isFinite(res)) 
+      if(isFinite(res)) {
         return alert('Something went wrong with your internet');
+      }
 
       this.messageDelivered();
       this._chatList.next(res.chatList);
 
       const targetMessage = this._chatList.value[this._chatList.value.findIndex(x => x[0].chatmate_id === this.chatmateId)][0];
-      if(targetMessage.chatmate_id !== this.chatmateId)
-        return
+      if(targetMessage.chatmate_id !== this.chatmateId) {
+        return;
+      }
 
       const seener = targetMessage.chatmate_id !== targetMessage.sender_id ? targetMessage.sender_id : targetMessage.receiver_id;
-      if(seener === targetMessage.sender_id)
+      if(seener === targetMessage.sender_id) {
         return;
+      }
 
       this.seenChat(targetMessage.chatmate_id, false);
     });
