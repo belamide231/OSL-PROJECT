@@ -42,12 +42,6 @@ const origin = process.env.CLOUD_HOST ? process.env.DNS : [
     'http://localhost:3000'
 ];
 
-(async () => {
-    const s = stampString();
-    console.log(s);
-    console.log(new Date(s));
-})();
-
 const app = express();
 const store = MemoryStore(session);
 const server = http.createServer(app);
@@ -117,6 +111,7 @@ io.engine.on('initial_headers', (headers, request) => {
 io.on('connection', connection);    
 
 (async () => {
-    if(mysql && await redis.con.ping()) 
+    if(mysql && await redis.con.ping()) {
         server.listen(process.env.CLOUD_HOST ? process.env.PORT : 3000, () => console.log(`RUNNING ON PORT: ${process.env.CLOUD_HOST ? process.env.PORT : '3000'}`));
+    }
 })();

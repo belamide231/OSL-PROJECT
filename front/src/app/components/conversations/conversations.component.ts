@@ -48,6 +48,7 @@ export class ConversationComponent implements AfterViewInit {
 
     const chatContainer = document.getElementById("chatContainer");
     chatContainer?.addEventListener("scroll", () => {
+
       if(chatContainer.clientHeight + Math.abs(chatContainer.scrollTop) + 1 >= chatContainer.scrollHeight || chatContainer.clientHeight + Math.abs(chatContainer.scrollTop) >= chatContainer.scrollHeight) {
         if(this.isMessagesLoading)
           return;
@@ -90,7 +91,10 @@ export class ConversationComponent implements AfterViewInit {
 
   public getStatusAndStamp = (object: any): any => {
 
-    switch(object.status) {
+
+    console.log(new Date(object.sent_at).toLocaleString());
+
+    switch(object.content_status) {
       case 'sending':
         return 'sending';
       case 'sent':

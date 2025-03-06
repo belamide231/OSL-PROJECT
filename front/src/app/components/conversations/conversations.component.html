@@ -128,32 +128,24 @@
 
     
     <!-- Chat Messages -->
-    <div id="chatContainer" class="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-4 flex flex-col-reverse h-96 scroll-smooth">
-
+    <div id="chatContainer" class="flex flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-4 flex-col-reverse min-h-fit">
       <div *ngIf="chat" class="w-full scroll-smooth flex flex-col-reverse">
 
+        <!-- TYPING ANIMATION -->
         <section style="transition: margin .3s ease;" class="pt-2" [ngClass]="isChatmateTyping ? 'mb-9 status-in' : 'mb-0 status-out' ">
           <div class="flex flex-col items-start">
-            <div class="bg-accent opacity-85 p-3 rounded-3xl max-w-[75%] w-fit shadow-md flex flex-row" [ngClass]="isChatmateTyping ? 'animate-fadeInScale' : 'animate-fadeOutScale' " style="overflow: hidden; transition: .3s ease;" [ngStyle]="{ 'height': isChatmateTyping ? '40px': '0px' }">
+            <div class="bg-accent opacity-85 rounded-3xl max-w-[75%] w-fit shadow-md flex flex-row" [ngClass]="isChatmateTyping ? 'animate-fadeInScale p-3' : 'animate-fadeOutScale' " style="overflow: hidden; transition: .3s ease;" [ngStyle]="{ 'height': isChatmateTyping ? '40px': '0px' }">
               <span style="overflow: hidden; transition: .3s ease;" [ngStyle]="{ 'height': isChatmateTyping ? '40px': '0px' }" class="w-5" href="https://git.io/typing-svg">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
-                  <circle fill="#FFFFFF" stroke="#FFFFFF" stroke-width="2" r="15" cx="40" cy="65">
-                    <animate attributeName="cy" calcMode="spline" dur="2" values="65;135;65;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="-.4"></animate>
-                  </circle>
-                  <circle fill="#FFFFFF" stroke="#FFFFFF" stroke-width="2" r="15" cx="100" cy="65">
-                    <animate attributeName="cy" calcMode="spline" dur="2" values="65;135;65;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="-.2"></animate>
-                  </circle>
-                  <circle fill="#FFFFFF" stroke="#FFFFFF" stroke-width="2" r="15" cx="160" cy="65">
-                    <animate attributeName="cy" calcMode="spline" dur="2" values="65;135;65;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="0"></animate>
-                  </circle>
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><circle fill="#FFFFFF" stroke="#FFFFFF" stroke-width="2" r="15" cx="40" cy="65"><animate attributeName="cy" calcMode="spline" dur="2" values="65;135;65;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="-.4"></animate></circle><circle fill="#FFFFFF" stroke="#FFFFFF" stroke-width="2" r="15" cx="100" cy="65"><animate attributeName="cy" calcMode="spline" dur="2" values="65;135;65;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="-.2"></animate></circle><circle fill="#FFFFFF" stroke="#FFFFFF" stroke-width="2" r="15" cx="160" cy="65"><animate attributeName="cy" calcMode="spline" dur="2" values="65;135;65;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="0"></animate></circle></svg>
               </span>
             </div>
           </div>
         </section>
 
+
         <section *ngFor="let message of renderMessages()">
 
+          <!-- MESSAGES -->
           <section *ngIf="message.new_conversation" class="pt-4 pb-2 flex items-center justify-center relative select-none">
             <hr class="w-[90%] border-gray-300">
             <span class="absolute pl-10 pr-10 bg-white text-xs text-gray-500">{{getDate(message.sent_at)}}</span>
@@ -219,7 +211,6 @@
 
 
 
-</div>
 </div>
 </div>
 

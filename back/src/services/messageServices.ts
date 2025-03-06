@@ -59,7 +59,9 @@ export const getActiveClientsService = async (role: string): Promise<{ status: n
 
 
 export const sendMessageService = async (senderId: number, data: sendMessageDto): Promise<number | object> => {
-    if(!data.receiverId || !data.content || !data.uuid || !data.contentType )     return 422;
+    if(!data.receiverId || !data.content || !data.uuid || !data.contentType ) {
+        return 422;
+    }
 
     try {
 
@@ -107,8 +109,6 @@ export const migrateCachedMessages = async (data: { chatKey: string, users: numb
 
     try {
 
-        console.log(sql);
-
         await mysql.promise().query(sql);
         await redis.con.sendCommand(['FCALL', 'delete_chat', '0', JSON.stringify(data)]);
 
@@ -129,6 +129,17 @@ export const loadMessageService = async (data: loadMessageDto, userId: number, n
 
         const result = await redis.con.sendCommand(['FCALL', 'get_message', '0', userId.toString(), data.chatmateId.toString(), data.messageId.toString()]) as string | null;
         const message = JSON.parse(result as string);
+
+        message.sent_at = new Date(message.sent_at);
+
+        if(message.delivered_at !== null) {
+            message.delivered_at = new Date(message.delivered_at);
+        }
+
+        if(message.seen_at !== null) {
+            message.seen_at = new Date(message.seen_at);
+        }
+
         const chatmateId = message.sender_id !== userId ? message.sender_id : message.receiver_id;
         let chatmate = await redis.con.get(`chats:users:${chatmateId}:name`);
 
