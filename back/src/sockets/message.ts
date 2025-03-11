@@ -1,43 +1,69 @@
-import { ConnectionAcquireTimeoutError } from "sequelize";
 import { io, socketClients } from "../app";
 import { socketUser } from "../interfaces/socketUser";
-import { deliveredChatService, seenChatService } from "../services/messageServices";
+import { editingAllTheChatStatusToDeliveredService, editingTheMessageStatusToDeliveredService, seenChatService } from "../services/messageServices";
 
 
-export const seenChat = async (user: socketUser, data: any): Promise<void> => {
+export const updatingTheChatStatusToSeen = async (receiverId: number, senderId: number): Promise<void> => {
 
-    const result = await seenChatService(user.id, data.chatmateId) as any;
+    // USER-ID WILL MARK THE CHATMATES MESSAGES AS SEEN
+
+    const result = await seenChatService(receiverId, senderId) as any;
     if(isFinite(result)) {
         return;
     }
 
-    result['notify'] = data.notify;
-    result['chatmate_id'] = user.id;
+    // DIRECTED TO SENDER
+    result['receiverId'] = receiverId;
+    const senderConnection = socketClients.clientConnections[senderId];
+    if(senderConnection) {
+        io.to(senderConnection).emit('notifySenderThatChatIsBeingSeen', result);
+    }
 
-    io.to(socketClients.clientConnections[data.chatmateId]).emit('seen message', result);
+    delete result['receiverId'];
 
-    result['chatmate_id'] = data.chatmateId;
-
-    io.to(socketClients.clientConnections[user.id]).emit('seen message', result);
+    // DIRECTED TO RECEIVER    
+    // const receiverConnection = socketClients.clientConnections[receiverId];
+    // if(receiverConnection) {
+    //     io.to(receiverConnection).emit('notifyReceiverThatChatIsBeingSeen', senderId);
+    // }
+//     result['receiverId'] = senderId;
+//     const userConnection = socketClients.clientConnections[receiverId];
+//     if(userConnection) {
+//         io.to(userConnection).emit('notifySenderThatChatIsSeen', result);
+//     }
 }
 
 
-export const messageDelivered = async (user: socketUser, currentChatmateId: number): Promise<void> => {
-    const result = await deliveredChatService(user.id) as any;
-
-    if(isFinite(result) || result.chatmates.length === 0) {
+export const editingTheChatStatusToDelivered = async (receiverId: number, senderId: number): Promise<void> => {
+    const result: any = await editingTheMessageStatusToDeliveredService(receiverId, senderId) as number | { updated: boolean, stamp: Date };
+    if(typeof result === 'number' && isFinite(result)) {
         return;
     }
 
-    let connections: any = [];
-    result.chatmates.map((x: number) => {
-        const clientConnections = socketClients.clientConnections[x];
-        if(clientConnections !== undefined) {
-            connections = connections.concat(socketClients.clientConnections[x]);
-        }
-    });
+    const senderConnection = socketClients.clientConnections[senderId];
+    io.to(senderConnection).emit('notifySenderThatTheMessageIsBeingDelivered', { receiverId, stamp: result.stamp });
+}
 
-    io.to(connections).emit('message delivered', { chatmateId: user.id, stamp: result.stamp, currentChatmateId });
+export const editingAllTheChatStatusToDelivered = async (receiver: number): Promise<void> => {
+    const result: any = await editingAllTheChatStatusToDeliveredService(receiver) as number | { chatmates: number[], stamp: Date }; 
+    if(typeof result === 'number' && isFinite(result)) {
+        return;
+    }
+
+    const connections = ((): string[] => {
+        let listOfConnections: string[] = [];
+        result.chatmates.forEach((senderId: number) => {
+            const senderConnection: string[] = socketClients.clientConnections[senderId];
+            listOfConnections = listOfConnections.concat(senderConnection);
+        });
+        return listOfConnections;
+    })();
+
+    if(connections.length === 0) {
+        return;
+    }
+
+    io.to(connections).emit('notifySenderThatTheMessageIsBeingDelivered', { receiver, stamp: result.stamp });
 }
 
 

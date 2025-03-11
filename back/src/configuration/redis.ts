@@ -57,7 +57,8 @@ export class getRedisConnection {
             'delete_chat',
             'get_chat',
             'delivered_message',
-            'seen_message'
+            'seen_message',
+            'update/chat_delivered'
         ];
 
         const filePath = path.join(__dirname, '../../scripts/@all_functions.lua');

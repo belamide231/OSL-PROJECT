@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Socket, io } from 'socket.io-client';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, elementAt, findIndex, Observable } from 'rxjs';
 
 import { DatabaseService } from './database.service';
 import { ApiService } from './api.service';
@@ -66,8 +66,7 @@ export class SocketService {
       this._actives.next(updatedActives);
     })
 
-
-    this.socket.on('receive message', async (data) => {
+    this.socket.on('notifyReceiverHisNewMessage', async (data) => {
 
       if(!data.chatmateId) {
         return;
@@ -90,75 +89,93 @@ export class SocketService {
         this._chatList.next(previousChatlist);
 
         if(res.sender_id === res.chatmate_id) {
-          this.messageDelivered();
+          this.notifyBackendThatMessageIsBeingReceived(data.chatmateId);
         };
       });
     });
 
 
-    this.socket.on('message delivered', (data) => {
-      
-      const previousChatList = this._chatList.value;
-      const targetChat = previousChatList.findIndex(x => x[0].chatmate_id === data.chatmateId);
+    this.socket.on('notifySenderThatTheMessageIsBeingDelivered', (data: { receiverId: number, stamp: Date }) => {
 
-      if(targetChat === -1) {
-        return;
-      }
-
-      previousChatList[targetChat].map((x: any) => {
-        if(x.chatmate_id !== x.sender_id && x.content_status === 'sent' && new Date(x.sent_at) <= new Date(data.stamp)) {
-          x.content_status = 'delivered', x.delivered_at = data.stamp;
-        }
-
-        return x;
-      });
-
-      this._chatList.next(previousChatList);
-
-      const targetMessage = this._chatList.value[this._chatList.value.findIndex(x => x[0].chatmate_id === this.chatmateId)][0];
-      if(targetMessage.chatmate_id !== this.chatmateId) {
-        return
-      }
-
-      const userId = targetMessage.sender_id !== targetMessage.chatmate_id ? targetMessage.sender_id : targetMessage.receiver_id;
-      if(userId === data.currentChatmateId) {
-        this.seenChat(targetMessage.chatmate_id, true);
-      }
-    });
-
-
-    this.socket.on('seen message', (data) => {
-
-      const chatList = this._chatList.value;
-      const chatIndex = chatList.findIndex(x => x[0].chatmate_id === data.chatmate_id);
-
-      chatList[chatIndex].map((x: any) => {
-        
-        if(x.sender_id !== x.chatmate_id && ['delivered'].includes(x.content_status) && new Date(x.sent_at) <= new Date(data.timestamp)) {
-          x.content_status = 'seen', x.seen_at = data.timestamp;
-        }
-        
-        return x;
-      });
-
-      this._chatList.next(chatList);
-
-      if(chatList[chatIndex][0].chatmate_id === this.chatmateId && chatList[chatIndex][0].sender_id === chatList[chatIndex][0].chatmate_id) {
-
-        chatList[chatIndex].map((x: any) => {
-
-          if(x.sender_id === x.chatmate_id && ['delivered', 'sent'].includes(x.content_status) && new Date(x.sent_at) <= new Date(data.timestamp)) {
-            x.content_status = 'seen';
+      const modifiedChatListValue = this._chatList.value;
+      const isChatListUpdated = (() => {
+        let updated = false;
+        const chatIndex = modifiedChatListValue.findIndex((element): any => {
+          if(element) {
+            return element[0].sender_id === data.receiverId || element[0].receiver_id === data.receiverId
           }
-
-          return x;
         });
+        if(chatIndex === -1) {
+          return updated;
+        }
 
-        this._chatList.next(chatList);
-        
-        // data.notify && this.audio.playMessage();
+        const messageIndex = modifiedChatListValue[chatIndex].findIndex((element: any): any => {
+          if(element) {
+            return element.receiver_id = data.receiverId;
+          }
+        });
+        if(messageIndex === -1) {
+          return updated;
+        }
+
+        modifiedChatListValue[chatIndex].map((element: any) => {
+          if(element.receiver_id === data.receiverId && element.content_status === 'sent') {
+            element.content_status = 'delivered';
+            element.delivered_at = data.stamp;
+            updated = true;
+          }
+        });
+        return updated;
+      })();
+      if(isChatListUpdated) {
+        this._chatList.next(modifiedChatListValue);
       }
     });
+
+    this.socket.on('notifySenderThatChatIsBeingSeen', (data: { timestamp: string, receiverId: number }) => {
+
+      const modifiedChatListValue = this._chatList.value;
+      const isChatListUpdated = (() => {
+        let updated = false;
+        const chatIndex = modifiedChatListValue.findIndex((element): any => {
+          if(element) {
+            return element[0].sender_id === data.receiverId || element[0].receiver_id === data.receiverId
+          }
+        });
+        if(chatIndex === -1) {
+          return updated;
+        }
+
+        const messageIndex = modifiedChatListValue[chatIndex].findIndex((element: any): any => {
+          if(element) {
+            return element.receiver_id = data.receiverId;
+          }
+        });
+        if(messageIndex === -1) {
+          return updated;
+        }
+
+        modifiedChatListValue[chatIndex].map((element: any) => {
+          if(element.receiver_id === data.receiverId && ['sent', 'delivered'].includes(element.content_status)) {
+            element.content_status = 'seen';
+            element.seen_at = data.timestamp;
+
+            if(element.delivered_at === null) {
+              element.delivered_at = data.timestamp;
+            }
+
+            updated = true;
+          }
+        });
+        return updated;
+      })();
+      if(isChatListUpdated) {
+        this._chatList.next(modifiedChatListValue);
+      }
+    });
+
+
+    //this.socket.on('notifyReceiverThatChatIsBeingSeen', (data: {  })) 
 
 
     this.socket.on('typing message', (typingChatmateId: number) => {
@@ -202,7 +219,7 @@ export class SocketService {
         if(x !== null && x.id !== undefined) {
           return x.id === disconnectingId;
         }
-      });
+      }); 
       if(index === -1) {
         return;
       }
@@ -213,21 +230,37 @@ export class SocketService {
   }
 
 
-  public seenChat = (chatmateId: number, notify: boolean) => {
+  public notifyBackendThatChatIsBeingSeen = () => {
 
-    this.socket.emit("seen chat", { chatmateId, notify });
+    const receiverTrackedChatmate = this.chatmateId;
+    this.socket.emit('notifyBackendThatChatIsBeingSeen', receiverTrackedChatmate);
   }
 
+  public notifyBackendThatMessageIsBeingReceived = (senderId: number | null) => {
+    const receiverCurrentChatmateId = this.chatmateId;
 
-  public messageDelivered = () => {
+    if(senderId === null) {
 
-    this.socket.emit("message delivered", this.chatmateId);
+      this.socket.emit('notifyBackendThatAllChatIsBeingReceived', receiverCurrentChatmateId);
+      return;
+    }
+
+    if(receiverCurrentChatmateId === senderId) {
+
+      this.socket.emit('notifyBackendThatChatIsBeingSeen', senderId);
+
+      this.markChatHeadAsSeen(senderId);
+
+    } else {
+
+      this.socket.emit('notifyBackendThatChatIsBeingReceived', senderId);
+    }
   }
 
 
   public typingMessage = () => {
 
-    this.socket.emit("typing message", this.chatmateId);
+    this.socket.emit('typing message', this.chatmateId);
   }
 
 
@@ -239,7 +272,7 @@ export class SocketService {
 
   public blankMessage = () => {
 
-    this.socket.emit("blank message", this.chatmateId);
+    this.socket.emit('blank message', this.chatmateId);
   }
 
 
@@ -250,7 +283,7 @@ export class SocketService {
         return alert('Something went wrong with your internet');
       }
 
-      this.messageDelivered();
+      this.notifyBackendThatMessageIsBeingReceived(null);
       this._chatList.next(res.chatList);
 
       const targetMessage = this._chatList.value[this._chatList.value.findIndex(x => x[0].chatmate_id === this.chatmateId)][0];
@@ -263,7 +296,22 @@ export class SocketService {
         return;
       }
 
-      this.seenChat(targetMessage.chatmate_id, false);
+      this.notifyBackendThatChatIsBeingSeen();
     });
+  }
+
+  public markChatHeadAsSeen = (senderId: number) => {
+
+    const modifiedChatListValue = this._chatList.value;
+    const chatIndex = modifiedChatListValue.findIndex((element): any => {
+      if(element) {
+        return element[0].sender_id === senderId
+      }
+    });
+
+    console.log(chatIndex);
+
+    modifiedChatListValue[chatIndex][0].content_status = 'seen';
+    this._chatList.next(modifiedChatListValue);
   }
 }

@@ -2,13 +2,14 @@ import { mysql, socketClients, io, redis } from "../app";
 import { getConversationDto } from "../dto/messageController/getConversationDto";
 import { sendMessageDto } from "../dto/messageController/sendMessageDto";
 import { validRoles } from "../validations/validRoles";
-import { messageModel } from "../model/messageModel";
+import { Message } from "../model/messageModel";
 import { setCachedTimer } from "../utilities/bullmq";
 import { insertMessage } from "../calls/InsertMessage";
 import { loadMessageDto } from "../dto/messageController/loadMessageDto";
 import { User } from "../interfaces/user";
-import { stampString } from "../utilities/stamp";
+import { TimeStamp } from "../utilities/stamp";
 import { migrationStatus } from "../calls/migrationStatus";
+import { updateV1State } from "uuid/dist/cjs/v1";
 
 
 export const getActiveClientsService = async (role: string): Promise<{ status: number, result: object | null }> => {
@@ -65,17 +66,16 @@ export const sendMessageService = async (senderId: number, data: sendMessageDto)
 
     try {
 
-        const results = await redis.con.sendCommand(['FCALL', 'set_message', '0', JSON.stringify(new messageModel(senderId, data.receiverId, data.contentType, data.content))]) as string;
+        const results = await redis.con.sendCommand(['FCALL', 'set_message', '0', JSON.stringify(new Message(senderId, data.receiverId, data.contentType, data.content))]) as string;
         setCachedTimer({ chatKey: results[1], users: [senderId, data.receiverId] });
 
         let connections: string[] = [];
         connections = connections.concat(socketClients.clientConnections[senderId]);
         connections = connections.concat(socketClients.clientConnections[data.receiverId]);
 
-        io.to(connections).emit('receive message', { messageId: results[0], senderId });
-
-        io.to(socketClients.clientConnections[senderId]).emit('receive message', { messageId: results[0], chatmateId: data.receiverId });
-        io.to(socketClients.clientConnections[data.receiverId]).emit('receive message', { messageId: results[0], chatmateId: senderId });
+        io.to(connections).emit('notifyReceiverHisNewMessage', { messageId: results[0], senderId });
+        io.to(socketClients.clientConnections[senderId]).emit('notifyReceiverHisNewMessage', { messageId: results[0], chatmateId: data.receiverId });
+        io.to(socketClients.clientConnections[data.receiverId]).emit('notifyReceiverHisNewMessage', { messageId: results[0], chatmateId: senderId });
 
         return { uuid: data.uuid };
 
@@ -247,15 +247,28 @@ export const loadMessagesService = async (userId: number, data: getConversationD
 }
 
 
-export const deliveredChatService = async (userId: number): Promise<number | object> => {
+
+export const editingTheMessageStatusToDeliveredService = async (seenerId: number, senderId: number): Promise<number | { updated: boolean, stamp: Date }> => {
+    if(!seenerId || !senderId) {
+        return 422;
+    }
+
+    const stamp: string = TimeStamp();
+    const result = await redis.con.sendCommand(['FCALL', 'update_chat_to_delivered', '0', seenerId.toString(), senderId.toString(), stamp]) as string;
+    return { updated: Boolean(result), stamp: new Date(stamp) };
+}
+
+
+
+export const editingAllTheChatStatusToDeliveredService = async (userId: number): Promise<number | { chatmates: number[], stamp: Date }> => {
     if(!userId) {
         return 422;
     }
 
     try {
 
-        const stamp = stampString();
-        let redisResult = await redis.con.sendCommand(['FCALL', 'delivered_message', '0', userId.toString()]);
+        const stamp = TimeStamp();
+        let redisResult: any = await redis.con.sendCommand(['FCALL', 'delivered_message', '0', userId.toString()]);
         if(redisResult === null) {
             redisResult = [];
         }
@@ -291,7 +304,7 @@ export const seenChatService = async (seenerId: number, chatmateId: number): Pro
 
     try {
 
-        const stamp = stampString();
+        const stamp = TimeStamp();
         await redis.con.sendCommand(['FCALL', 'seen_message', '0', seenerId.toString(), chatmateId.toString(), stamp]);
         
         // const result = (await mysql.promise().query('CALL seen_chat(?, ?)', [seenerId, chatmateId]) as any)[0][0][0];

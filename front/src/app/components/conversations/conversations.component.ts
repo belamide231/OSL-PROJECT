@@ -134,16 +134,14 @@ export class ConversationComponent implements AfterViewInit {
       this.isUserTyping = false;
     }
 
-    this.chat = this.chatList[this.chatList.findIndex((x: any) => x[0].chatmate_id === this.socket.chatmateId)];
-    
     const chatIndex = this.chatList.findIndex((x: any) => x[0].chatmate_id === chatmateId);
     if(chatIndex === -1) 
       return;
 
-    if(this.chatList[chatIndex][0].content_status === 'seen')
-      return;
+    this.chat = this.chatList[chatIndex];
 
-    this.socket.seenChat(chatmateId, false);
+    this.socket.markChatHeadAsSeen(chatmateId);
+    this.socket.notifyBackendThatChatIsBeingSeen();
   }
 
   public renderMessages = () => {

@@ -26,7 +26,7 @@ import { pageController } from './controllers/pageController';
 import { companyController } from './controllers/companyController';
 import { widgetController } from './controllers/widgetController';
 import { cookiesParser } from './utilities/cookieParser';
-import { stampString } from './utilities/stamp';
+import { TimeStamp } from './utilities/stamp';
 
 export const tmp = path.join(__dirname, '../tmp');
 export const level = getLevelConnection();
