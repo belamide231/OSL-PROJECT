@@ -18,19 +18,6 @@ export const updatingTheChatStatusToSeen = async (receiverId: number, senderId: 
     if(senderConnection) {
         io.to(senderConnection).emit('notifySenderThatChatIsBeingSeen', result);
     }
-
-    delete result['receiverId'];
-
-    // DIRECTED TO RECEIVER    
-    // const receiverConnection = socketClients.clientConnections[receiverId];
-    // if(receiverConnection) {
-    //     io.to(receiverConnection).emit('notifyReceiverThatChatIsBeingSeen', senderId);
-    // }
-//     result['receiverId'] = senderId;
-//     const userConnection = socketClients.clientConnections[receiverId];
-//     if(userConnection) {
-//         io.to(userConnection).emit('notifySenderThatChatIsSeen', result);
-//     }
 }
 
 
