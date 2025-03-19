@@ -23,10 +23,9 @@ import { refresher } from './configuration/refresher';
 import { messageController } from './controllers/messageController';
 import { accountController } from './controllers/accountController';
 import { pageController } from './controllers/pageController';
-import { companyController } from './controllers/companyController';
 import { widgetController } from './controllers/widgetController';
 import { cookiesParser } from './utilities/cookieParser';
-import { TimeStamp } from './utilities/stamp';
+import { companyController } from './controllers/companyController';
 
 export const tmp = path.join(__dirname, '../tmp');
 export const level = getLevelConnection();
@@ -42,7 +41,7 @@ const origin = process.env.CLOUD_HOST ? process.env.DNS : [
     'http://localhost:3000'
 ];
 
-const app = express();
+export const app = express();
 const store = MemoryStore(session);
 const server = http.createServer(app);
 export const chance = new Chance();

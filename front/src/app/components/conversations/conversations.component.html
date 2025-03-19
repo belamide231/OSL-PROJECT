@@ -38,7 +38,7 @@
 
       <ul class="space-y-3 overflow-y-auto overflow-x-hidden h-[40vh]">
         <li *ngFor="let chatHead of chatListHeads"
-          (click)="selectChat(chatHead.chatmate_id)"
+          (click)="selectChat(chatHead)"
           style="animation: color .5s ease"
           class="cursor-pointer p-3 hover:bg-gray-300 rounded-lg select-none"
           [ngClass]="chatHead.chatmate_id === chatHead.sender_id && chatHead.content_status !== 'seen' ? 'bg-gray-200' : 'bg-gray-100' "

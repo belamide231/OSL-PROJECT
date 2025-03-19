@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Socket, io } from 'socket.io-client';
-import { BehaviorSubject, elementAt, findIndex, Observable } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 
 import { DatabaseService } from './database.service';
 import { ApiService } from './api.service';
@@ -30,7 +30,6 @@ export class SocketService {
   private _typingChatmates: number[] = [];
 
   public chatmateId: number = 0;
-
 
   constructor(private readonly api: ApiService, private readonly database: DatabaseService, private readonly audio: AudioService) { 
 
@@ -313,5 +312,27 @@ export class SocketService {
 
     modifiedChatListValue[chatIndex][0].content_status = 'seen';
     this._chatList.next(modifiedChatListValue);
+  }
+
+  public loadMoreMessages = (existingMessageLength: number, chatmateId: number) => {
+    this.api.loadMoreMessages(existingMessageLength, chatmateId).subscribe(res => {
+
+      if(Array.isArray(res) && res.length > 0) {
+        
+        const modifiedChatList = this._chatList.value;
+        const chatIndex = modifiedChatList.findIndex((chat): any => {
+          if(chat && chat[0]) {
+            return chat[0].chatmate_id === chatmateId;
+          }
+        })
+
+        if(chatIndex === -1) {
+          return;
+        }
+
+        modifiedChatList[chatIndex] = modifiedChatList[chatIndex].concat(res);
+        this._chatList.next(modifiedChatList);
+      }
+    });
   }
 }

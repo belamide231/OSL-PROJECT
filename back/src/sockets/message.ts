@@ -4,16 +4,13 @@ import { editingAllTheChatStatusToDeliveredService, editingTheMessageStatusToDel
 
 
 export const updatingTheChatStatusToSeen = async (receiverId: number, senderId: number): Promise<void> => {
-
-    // USER-ID WILL MARK THE CHATMATES MESSAGES AS SEEN
-
     const result = await seenChatService(receiverId, senderId) as any;
     if(isFinite(result)) {
         return;
     }
 
-    // DIRECTED TO SENDER
     result['receiverId'] = receiverId;
+    
     const senderConnection = socketClients.clientConnections[senderId];
     if(senderConnection) {
         io.to(senderConnection).emit('notifySenderThatChatIsBeingSeen', result);
@@ -30,6 +27,7 @@ export const editingTheChatStatusToDelivered = async (receiverId: number, sender
     const senderConnection = socketClients.clientConnections[senderId];
     io.to(senderConnection).emit('notifySenderThatTheMessageIsBeingDelivered', { receiverId, stamp: result.stamp });
 }
+
 
 export const editingAllTheChatStatusToDelivered = async (receiver: number): Promise<void> => {
     const result: any = await editingAllTheChatStatusToDeliveredService(receiver) as number | { chatmates: number[], stamp: Date }; 

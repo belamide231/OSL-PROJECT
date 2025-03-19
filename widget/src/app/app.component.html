@@ -1,11 +1,20 @@
-<div class="flex items-center justify-center h-[100vh] bg-gray-900"> <!-- TEMPORARY --->
-  <div class="w-72 flex flex-col border border-gray-400 bg-white">
-    <section #section class="h-96 w-full border-b border-gray-400 mb-2"></section>
-    <form class="flex justify-evenly items-end mb-2">
-      <label #label for="textarea" class="flex items-center px-2 rounded-lg h-min-[40px] w-[70%] border border-gray-400 overflow-hidden cursor-text">
-        <textarea #textarea name="" id="textarea" rows="1" cols="1" placeholder="Type..." class="pr-1 my-[7px] text-gray-500 outline-none border-none bg-none resize-none flex items-center justify-start w-[100%] overflow-hidden no-track"></textarea>
-      </label>
-      <input type="submit" value="Submit" class="rounded-lg bg-slate-500 text-white py-2 px-2 h-[40px] cursor-pointer">
+<div class="flex items-center justify-center h-[100vh] bg-gray-900">
+
+  <main class="h-96 w-72 bg-white flex flex-col">
+
+    <section class="bg-slate-300 flex flex-grow">
+      
+    </section>
+
+    <form class="m-0 p-0 h-fit flex flex-row justify-evenly border-t-2 border-black">
+
+      <p class="w-[75%] max-h-44 my-1 overflow-y-auto border border-gray-700 flex justify-center rounded-md">
+        <textarea class="w-[90%] my-1 resize-none outline-none border-none overflow-y-hidden" rows="1" oninput="this.style.height = 'fit-content'; this.style.height = this.scrollHeight + 'px'; "></textarea>
+      </p>
+
+      <input type="submit" class="w-[15%] my-1 border border-black rounded-md cursor-pointer" value="Send">
+
     </form>
-  </div>
+
+  </main>
 </div>

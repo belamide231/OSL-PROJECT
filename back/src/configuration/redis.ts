@@ -50,15 +50,16 @@ export class getRedisConnection {
     private async functions() {
 
         const functions = [
-            'set_message', 
-            'get_message', 
-            'get_chats', 
-            'set_names',
-            'delete_chat',
-            'get_chat',
-            'delivered_message',
-            'seen_message',
-            'update/chat_delivered'
+            'set/names',
+            'set/message', 
+            'get/chat',
+            'get/chats', 
+            'get/message',
+            'get/messages',
+            'update/chat_status_seen',
+            'update/chat_status_delivered',
+            'update/chats_status_delivered',
+            'delete/chat'
         ];
 
         const filePath = path.join(__dirname, '../../scripts/@all_functions.lua');

@@ -1,5 +1,4 @@
 import { mysql, socketClients, io, redis } from "../app";
-import { getConversationDto } from "../dto/messageController/getConversationDto";
 import { sendMessageDto } from "../dto/messageController/sendMessageDto";
 import { validRoles } from "../validations/validRoles";
 import { Message } from "../model/messageModel";
@@ -9,8 +8,7 @@ import { loadMessageDto } from "../dto/messageController/loadMessageDto";
 import { User } from "../interfaces/user";
 import { TimeStamp } from "../utilities/stamp";
 import { migrationStatus } from "../calls/migrationStatus";
-import { updateV1State } from "uuid/dist/cjs/v1";
-
+import { migrateStatusByLoadingMoreMessages } from "../calls/migrateStatusByLoadingMoreMessages";
 
 export const getActiveClientsService = async (role: string): Promise<{ status: number, result: object | null }> => {
     if(!validRoles.includes(role)) {
@@ -228,21 +226,63 @@ export const loadChatListServices = async (user: User, chatListLength: number): 
 }
 
 
-export const loadMessagesService = async (userId: number, data: getConversationDto): Promise<{ status: number, result: object | null }> => {
-    if(isNaN(data.chatmateId) || isNaN(data.messageLength)) {
-        return { status: 422, result: null };
+export const loadMoreMessagesService = async (user: User, data: { lengthOfExistingMessages: number, chatmateId: number }): Promise<number | object[]> => {
+    if(isNaN(data.chatmateId) || isNaN(data.lengthOfExistingMessages)) {
+        return 422;
     }
 
     try {
 
-        const result = (await mysql.promise().query('CALL load_messages(?, ?, ?, ?)', [data.messageLength, userId, data.chatmateId, 15]) as any)[0][0];
-        return { status: 200, result: result };
+        const cache: any = await redis.con.sendCommand(['FCALL', 'get_messages', '0', user.id.toString(), data.chatmateId.toString(), data.lengthOfExistingMessages.toString()]) as string | null;
+        
+        if(cache === null) {
+            const [[db]] = await mysql.promise().query('CALL load_more_messages(?, ?, ?, ?)', [data.lengthOfExistingMessages, user.id, data.chatmateId, 15]) as any;
+            return db;
+        }
+
+        const jsonCache = JSON.parse(cache);
+
+        if(jsonCache.length !== 15) {    
+            let sql = '';
+
+            if(['delivered', 'seen'].includes(jsonCache.messages_status.user.content_status)) {
+                
+                const jsonStatus = {
+                    senderId: user.id, 
+                    receiverId: data.chatmateId, 
+                    status: jsonCache.messages_status.user.content_status, 
+                    deliveredAt: jsonCache.messages_status.user.delivered_at, 
+                    seenAt: jsonCache.messages_status.user.seen_at
+                };
+                sql += migrateStatusByLoadingMoreMessages(jsonStatus);
+            }
+
+            if(['delivered', 'seen'].includes(jsonCache.messages_status.chatmate.content_status)) {
+                
+                const jsonStatus = {
+                    senderId: data.chatmateId,
+                    receiverId: user.id,  
+                    status: jsonCache.messages_status.chatmate.content_status, 
+                    deliveredAt: jsonCache.messages_status.chatmate.delivered_at, 
+                    seenAt: jsonCache.messages_status.chatmate.seen_at
+                };
+                sql += migrateStatusByLoadingMoreMessages(jsonStatus);
+            }
+
+
+            sql += `CALL load_more_messages(0, ${user.id}, ${data.chatmateId}, ${15 - jsonCache.length});`;
+
+            const [[db]] = await mysql.promise().query(sql) as any;
+            jsonCache.messages = jsonCache.messages.concat(db);
+        }
+
+        return jsonCache.messages;
 
     } catch (err) {
 
         console.log(err);
         console.log('FUNCTION "loadMessagesService"');
-        return { status: 500, result: null };
+        return 500;
     }
 }
 
@@ -273,19 +313,6 @@ export const editingAllTheChatStatusToDeliveredService = async (userId: number):
             redisResult = [];
         }
 
-        //  # REQUIRED
-        //    KANI NGA LINE DAPAT EH MIGRATE NIS PAG LOAD UG MESSAGES
-        // const [[rows, metaData], schema] = await mysql.promise().query('CALL chat_delivered(?, CAST(? AS DATETIME))', [userId, stamp]) as any;
-
-        // const results: any = {
-        //     chatmates: [...new Set(redisResult.concat(rows.map((x: any) => {
-        //         if(x !== undefined) {
-        //             x.chatmate_id;
-        //         }
-        //     })))],
-        //     stamp: new Date(stamp)
-        // };
-
         return { chatmates: redisResult, stamp: new Date(stamp) };
 
     } catch (err) {
@@ -306,9 +333,6 @@ export const seenChatService = async (seenerId: number, chatmateId: number): Pro
 
         const stamp = TimeStamp();
         await redis.con.sendCommand(['FCALL', 'seen_message', '0', seenerId.toString(), chatmateId.toString(), stamp]);
-        
-        // const result = (await mysql.promise().query('CALL seen_chat(?, ?)', [seenerId, chatmateId]) as any)[0][0][0];
-        // console.log(result);
 
         return { timestamp: stamp };
 

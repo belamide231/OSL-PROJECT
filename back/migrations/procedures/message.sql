@@ -128,7 +128,41 @@ END;;
 
 
 
-CREATE PROCEDURE load_messages(IN in_message_length INT, IN in_user_id INT, IN in_chatmate_id INT, IN in_limit INT)
+CREATE PROCEDURE migrate_status_by_loading_more_messages(
+  IN in_sender_id INT,
+  IN in_receiver_id INT,
+  IN in_sender_message_status VARCHAR(10),
+  IN in_sender_message_delivered_at DATETIME,
+  IN in_sender_message_seen_at DATETIME
+) BEGIN
+
+  DECLARE sender_message_status VARCHAR(10) DEFAULT 'sent';
+  IF EXISTS (SELECT 1 FROM tbl_messages WHERE sender_id = in_sender_id AND receiver_id = in_receiver_id ORDER BY sent_at DESC LIMIT 1) THEN
+
+    SELECT content_status INTO sender_message_status FROM tbl_messages WHERE sender_id = in_sender_id AND receiver_id = in_receiver_id ORDER BY sent_at DESC LIMIT 1;
+    IF sender_message_status != 'seen' OR in_sender_message_status != 'sent' OR sender_message_status != in_sender_message_status THEN
+
+      UPDATE tbl_messages
+      SET 
+        content_status = sender_message_status,
+        delivered_at = in_sender_message_delivered_at,
+        seen_at = CASE
+          WHEN in_sender_message_status = 'seen' THEN in_sender_message_seen_at 
+          ELSE seen_at
+        END
+      WHERE sender_id = in_sender_id
+      AND receiver_id = in_receiver_id
+      AND (
+        (in_sender_message_status = 'delivered' AND content_status = 'sent') OR
+        (in_sender_message_status = 'seen' AND content_status IN ('sent', 'delivered'))
+      );
+    END IF; 
+  END IF;
+END;;
+
+
+
+CREATE PROCEDURE load_more_messages(IN in_message_length INT, IN in_user_id INT, IN in_chatmate_id INT, IN in_limit INT)
 BEGIN
 
   SELECT (
@@ -174,8 +208,8 @@ BEGIN
       ITERATE read_loop;
     END IF;
 
-    -- CALL load_messages(0, in_user, in_chatmate_id, IF(in_chat_list_length = 0, 15, 1));
-    CALL load_messages(0, in_user, in_chatmate_id, 1);
+    -- CALL load_more_messages(0, in_user, in_chatmate_id, IF(in_chat_list_length = 0, 15, 1));
+    CALL load_more_messages(0, in_user, in_chatmate_id, 1);
 
   END LOOP;
 

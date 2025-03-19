@@ -29,6 +29,7 @@ export class ConversationComponent implements AfterViewInit {
   composeModal: boolean = false;
   attachmentModal: boolean = false;
 
+  
   public chatListHeads: any = [];
   public chatList: any[] = [];
   public chat: any = [];
@@ -54,11 +55,8 @@ export class ConversationComponent implements AfterViewInit {
           return;
 
         this.isMessagesLoading = true;
-        this.api.loadMessages(this.chat.length, this.socket.chatmateId).subscribe(res => {
-          
-          this.chat = this.chat.concat(res);  
-          this.isMessagesLoading = false;
-        });
+        const existingMessageLength = this.chat.length;
+        this.socket.loadMoreMessages(existingMessageLength, this.socket.chatmateId);
       }
     });
 
@@ -79,11 +77,14 @@ export class ConversationComponent implements AfterViewInit {
       this.chatList = chatList as any;
       this.chatListHeads = chatList.map((x: any) => x[0]);
 
-      if(chatList.length === 0)
+      if(chatList.length === 0) {
         return;
+      }
 
-      if(this.socket.chatmateId === 0) 
+      if(this.socket.chatmateId === 0 ) {
         this.socket.chatmateId = chatList[0][0].chatmate_id;
+        this.socket.loadMoreMessages(chatList[0].length, chatList[0][0].chatmate_id);
+      }
 
       this.chat = chatList[chatList.findIndex(x => x[0].chatmate_id === this.socket.chatmateId)];
     });
@@ -120,27 +121,34 @@ export class ConversationComponent implements AfterViewInit {
     this.isTimePassed = 0;
   }
 
-  public selectChat = (chatmateId: number) => {
-    if(this.socket.chatmateId === chatmateId)
+  public selectChat = (chatHead: any) => {
+
+    if(this.socket.chatmateId === chatHead.chatmate_id)
       return;
 
     this.newMessage = '';
     this.socket.blankMessage();
 
-    this.socket.chatmateId = chatmateId;
-    this.socket.checkIfChatmateIsTyping(chatmateId);
+    this.socket.chatmateId = chatHead.chatmate_id;
+    this.socket.checkIfChatmateIsTyping(chatHead.chatmate_id);
 
     if(this.newMessage !== '') {
       this.isUserTyping = false;
     }
 
-    const chatIndex = this.chatList.findIndex((x: any) => x[0].chatmate_id === chatmateId);
+    const chatIndex = this.chatList.findIndex((x: any) => x[0].chatmate_id === chatHead.chatmate_id);
     if(chatIndex === -1) 
       return;
 
     this.chat = this.chatList[chatIndex];
+    const existingMessageLength = this.chat.length;
 
-    this.socket.markChatHeadAsSeen(chatmateId);
+    if(existingMessageLength === 1) {
+      this.isMessagesLoading = true;
+      this.socket.loadMoreMessages(existingMessageLength, chatHead.chatmate_id);
+    }
+
+    this.socket.markChatHeadAsSeen(chatHead.chatmate_id);
     this.socket.notifyBackendThatChatIsBeingSeen();
   }
 

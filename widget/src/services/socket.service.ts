@@ -13,6 +13,8 @@ export class SocketService {
 
     this.socket.on('connected', () => {
       console.log("YOU ARE NOW CONNECTED");
-    })
+    });
   }
+
+  
 }

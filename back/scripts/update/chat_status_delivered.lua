@@ -20,17 +20,21 @@ redis.register_function('update_chat_to_delivered', function (_, args)
 
         local object_message = cjson.decode(stringified_message[1])
         if object_message.content_status == 'delivered' or object_message.content_status == 'seen' then
-            break;
+            break
         end
 
-        object_message.content_status = 'delivered'
-        object_message.delivered_at = stringified_stamp
+        if object_message.sender_id ~= seener then
 
-        stringified_message = cjson.encode(object_message)
-        redis.call('LSET', chat_key, counter, stringified_message)
+            object_message.content_status = 'delivered'
+            object_message.delivered_at = stringified_stamp
 
-        if updated == false then
-            updated = true
+            stringified_message = cjson.encode(object_message)
+            redis.call('LSET', chat_key, counter, stringified_message)
+
+            if updated == false then
+                updated = true
+            end
+
         end
 
         counter = counter + 1

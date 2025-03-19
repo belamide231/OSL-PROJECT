@@ -38,12 +38,16 @@ redis.register_function('delivered_message', function (_, args)
                 break
             end
 
-            object_message.content_status = 'delivered'
-            redis.call('LSET', chat_key, message_search_index, cjson.encode(object_message))
+            if object_message.sender_id ~= user then
 
-            if updated == false then
-                updated = true
-                table.insert(chatmates_to_notify, tonumber(chatmates[1]))
+                object_message.content_status = 'delivered'
+                redis.call('LSET', chat_key, message_search_index, cjson.encode(object_message))    
+
+                if updated == false then
+                    updated = true
+                    table.insert(chatmates_to_notify, tonumber(chatmates[1]))
+                end
+
             end
 
             message_search_index = message_search_index + 1
