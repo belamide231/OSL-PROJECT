@@ -10,19 +10,21 @@ const connection = {
     }
 };
 
+
 const queue = new Queue('chats', connection);
 
 
 export const setCachedTimer = async (data: { chatKey: string, users: number[] }) => {
-    const removeExists = await queue.getJob(data.chatKey);
+    const existing = await queue.getJob(data.chatKey);
 
-    removeExists && await removeExists.remove();
+    if(existing) {
+        await existing.remove();
+    }
 
     await queue.add('chat', { 
         data 
     }, {
         delay: 1000 * 60 * 60,
-        // delay: 1000 * 10,
         jobId: data.chatKey
     });
 }
@@ -31,3 +33,16 @@ export const setCachedTimer = async (data: { chatKey: string, users: number[] })
 new Worker('chats', async (job) => {
     await migrateCachedMessages(job.data.data);
 }, connection);
+
+
+// Ang gi cached nga client info.
+export const setCachedClientInfoTimer = async (sid: string) => {
+    const existing = await queue.getJob(sid);
+
+    if(existing) {
+        await existing.remove();
+    }
+
+    const key = `users:clients:${sid}`;
+    await queue.add(key, sid, { jobId: sid, delay: 1000 * 60 * 60 });
+}

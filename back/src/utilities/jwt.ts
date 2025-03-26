@@ -124,4 +124,4 @@ export const verifyInvitationToken = (invitationToken: string) => {
         };
     }
 
-} 
+}

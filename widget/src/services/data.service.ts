@@ -1,31 +1,33 @@
 import { Injectable } from '@angular/core';
 import { ApiService } from './api.service';
 import { SocketService } from './socket.service';
+import { map, Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
-export class DataService {
+export class DataService { 
+  constructor(private api: ApiService, private socket: SocketService) {}
 
-  constructor(private api: ApiService, private socket: SocketService) { 
+  public getCompanyThemeForUnauthenticatedUsersService = (address: { country: string, city: string, street: string } | {}): Observable<string> => {
+    return this.api.getCompanyThemeForUnauthenticatedUsersService(address).pipe(
+      map((response: number | { primary_color: string, secondary_color: string, whites_color: string }) => {
 
-    this.api.getCompanyThemeForUnauthenticatedService().subscribe((response: { primary_color: string, secondary_color: string, whites_color: string } | number): any => {
+        console.log(response);
 
-      if(isFinite(response as number)) {
-        return null;
-      }
+        if(typeof response === 'number') {
+          return response.toString();
+        }
 
-      response = response as { primary_color: string, secondary_color: string, whites_color: string };
-      const keys = Object.keys(response) as Array<keyof typeof response>;
+        Object.keys(response).forEach((key) => {
+          document.documentElement.style.setProperty('--' + key, (response as any)[key]);          
+        });
 
-      keys.forEach((key: keyof typeof response) => {
-        const color = response[key];
-        const modifiedKey = '--' + key.toString();
-        document.documentElement.style.setProperty(modifiedKey, color);
-      });
-
-    });    
-
-    
+        return 'home';
+      })
+    );
   }
+
+
+  
 }

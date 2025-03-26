@@ -1,5 +1,6 @@
-import { mysql } from "../app";
+import { mysql, redis } from "../app";
 import { User } from "../interfaces/user";
+import { generateAccessToken } from "../utilities/jwt";
 
 export const getCompanyThemeService = async (user: User): Promise<number | object> => {
     
@@ -18,19 +19,23 @@ export const getCompanyThemeService = async (user: User): Promise<number | objec
     }
 }
 
-const urls: any = {
-    "https://www.ibcauto.com": "ibc",
-    "localhost:3000": "ibc"
-};
-export const getCompanyThemeForUnauthenticatedService = async (url: string): Promise<number | object> => {
-    if(!urls[url]) {
-        return 422;
-    }
+
+export const getCompanyThemeForUnauthenticatedUsersService = async (sid: string, company: string, address: {} | { country: string, city: string, street: string }): Promise<number | { primary_color: string, secondary_color: string, whites_color: string }> => {
 
     try {
 
-        const [[object]] = await mysql.promise().query('SELECT primary_color, secondary_color, secondary_color, whites_color FROM tbl_company_theme WHERE company = ?', [urls[url]]) as any;
-        return object;
+        const key = `companies:${company}:theme`;
+        const themeInCache = await redis.con.get(key);
+        if(!themeInCache) {
+
+            const [[themeInDb]] = await mysql.promise().query('SELECT primary_color, secondary_color, whites_color FROM tbl_company_theme WHERE company = ?', [company]) as any;
+            const stringifiedTheme = JSON.stringify(themeInDb);
+            await redis.con.set(key, stringifiedTheme);
+
+            return themeInDb;
+        }
+        
+        return JSON.parse(themeInCache) as { primary_color: string, secondary_color: string, whites_color: string };
 
     } catch (error) {
 

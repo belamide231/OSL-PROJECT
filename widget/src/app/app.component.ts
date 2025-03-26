@@ -1,19 +1,53 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http'; // ✅ Import this
+import { ChatComponent } from './components/chat/chat.component';
+import { HomeComponent } from './components/home/home.component';
 import { DataService } from '../services/data.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, HttpClientModule], // ✅ Add HttpClientModule here
+  imports: [CommonModule, ChatComponent, HomeComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent implements OnInit {
+export class AppComponent {
   title = 'widget';
+  page = '';
 
-  constructor(private data: DataService) {}
 
-  ngOnInit(): void {}
+  constructor(public data: DataService) {
+    this.initializesClientData();
+  }
+
+
+  public getAddress = async (): Promise<{ city?: string, country?: string, street?: string }> => {
+      
+    try {
+
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 });
+      });
+  
+      const { latitude, longitude } = position.coords;
+      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+      const data = await response.json();
+  
+      return {
+        city: data.address.city,
+        country: data.address.country,
+        street: data.address.road
+      };
+  
+    } catch (error) {
+
+      return {};
+    } 
+  }
+
+
+  public initializesClientData = async () => {
+    const address = await this.getAddress();
+    this.data.getCompanyThemeForUnauthenticatedUsersService(address).subscribe((response: string) => this.page = response);
+  }
 }

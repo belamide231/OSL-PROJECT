@@ -52,6 +52,8 @@ export const io = new Server(server, {
         credentials: true
     }
 });
+
+// Balhinonon nis redis, kay di ta mag rely ug pa sud ug data satong hosting kay basin ma overflow.
 export const socketClients: socketClientsInterface = {
     clientConnections: {},
     adminsId: [],
@@ -96,7 +98,7 @@ app
 .use(messageController)
 .use(accountController)
 .use(companyController)
-.use(widgetController)
+.use(widgetController);
 
 refresher();
 io.engine.on('initial_headers', (headers, request) => {

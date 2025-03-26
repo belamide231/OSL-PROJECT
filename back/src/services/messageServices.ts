@@ -86,6 +86,7 @@ export const sendMessageService = async (senderId: number, data: sendMessageDto)
 }
 
 
+// Transfering the messages that are stored in redis to database.
 export const migrateCachedMessages = async (data: { chatKey: string, users: number[] }): Promise<void> => {
 
     let sql = '';

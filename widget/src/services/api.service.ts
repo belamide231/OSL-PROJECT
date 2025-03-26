@@ -13,14 +13,10 @@ export class ApiService {
   constructor(private http: HttpClient) {}
 
 
-  public getCompanyThemeForUnauthenticatedService = (): Observable<any> => {
-    
-    return this.http.post(API.endpoint('unauthenticated/company/theme'), null, API.headers()).pipe(map((response: any) => {
-
+  public getCompanyThemeForUnauthenticatedUsersService = (address: { country: string, city: string, street: string } | {}): Observable<number | { primary_color: string, secondary_color: string, whites_color: string }> => {
+    return this.http.post(API.endpoint('unauthenticated/company/theme'), address, API.headers()).pipe(map((response: any) => {
       return JSON.parse(response.body);
-
     }), catchError((error) => {
-
       return of(error.status);
     }));
   }
