@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ChatComponent } from './components/chat/chat.component';
 import { HomeComponent } from './components/home/home.component';
 import { DataService } from '../services/data.service';
+import { OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-root',
@@ -11,13 +12,23 @@ import { DataService } from '../services/data.service';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'widget';
   page = '';
 
 
   constructor(public data: DataService) {
     this.initializesClientData();
+  }
+
+
+  ngOnInit(): void {
+    this.data.pageObserver.subscribe(page => this.page = page);
+  }
+
+
+  public selectAccount = async (selectedAccountId: string) => {
+    console.log(selectedAccountId);
   }
 
 
@@ -48,6 +59,6 @@ export class AppComponent {
 
   public initializesClientData = async () => {
     const address = await this.getAddress();
-    this.data.getCompanyThemeForUnauthenticatedUsersService(address).subscribe((response: string) => this.page = response);
+    this.data.getCompanyThemeForUnauthenticatedUsersData(address).subscribe((response: string) => this.page = response);
   }
 }

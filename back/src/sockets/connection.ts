@@ -1,5 +1,6 @@
 import { Socket } from 'socket.io';
 
+
 import { socketClients, redis } from '../app';
 import { cookiesParser } from '../utilities/cookieParser';
 import { io } from '../app';
@@ -7,16 +8,33 @@ import { verifyAccessToken } from '../utilities/jwt';
 import { blankMessage, editingAllTheChatStatusToDelivered, editingTheChatStatusToDelivered, typingMessage, updatingTheChatStatusToSeen } from './message';
 import { socketUser } from '../interfaces/socketUser';
 
+
 export const connection = async (socket: Socket): Promise<any> => {
 
     const cookies = socket.request.headers.cookie;
-    if (!cookies) return;
+    if(!cookies) {
+        return;
+    }
 
     const parsedCookies = cookiesParser(cookies) as any;
-    if (!parsedCookies) return;
+    if(!parsedCookies) {
+        return;
+    }
+
+    if(!parsedCookies.atk && parsedCookies.sid) {
+        await connectionForUnauthenticatedUsers(socket, parsedCookies.sid);
+    }
 
     const decoded = verifyAccessToken(parsedCookies.atk) as any;
-    if (!decoded.token) return;
+    if(!decoded.token) {
+        return;
+    }
+
+    await connectionForAuthenticatedUsers(socket, decoded);
+};
+
+
+const connectionForAuthenticatedUsers = async (socket: Socket, decoded: any): Promise<void> => {
 
     const client = decoded.payload;
     const id = client.sub;
@@ -54,9 +72,15 @@ export const connection = async (socket: Socket): Promise<any> => {
     io.to(socket.id).emit('connected');
     socket.broadcast.emit('someone joined', (user));
     
-    socket.on('notifyBackendThatAllChatIsBeingReceived', () => editingAllTheChatStatusToDelivered(user.id));
-    socket.on('notifyBackendThatChatIsBeingReceived', (senderId: number) => editingTheChatStatusToDelivered(user.id, senderId));
-    socket.on('notifyBackendThatChatIsBeingSeen', (senderId: number) => updatingTheChatStatusToSeen(user.id, senderId));
+    socket.on('notifyBackendThatAllChatIsBeingReceived', () => {
+        editingAllTheChatStatusToDelivered(user.id)
+    });
+    socket.on('notifyBackendThatChatIsBeingReceived', (senderId: number) => {
+        editingTheChatStatusToDelivered(user.id, senderId)
+    });
+    socket.on('notifyBackendThatChatIsBeingSeen', (senderId: number) => {
+        updatingTheChatStatusToSeen(user.id, senderId)
+    });
 
     socket.on('typing message', (chatmateId: number) => typingMessage(user, chatmateId));
     socket.on('blank message', (chatmateId: number) => blankMessage(user, chatmateId));    
@@ -86,4 +110,8 @@ export const connection = async (socket: Socket): Promise<any> => {
             break;
         }
     });
-};
+}
+
+
+const connectionForUnauthenticatedUsers = async (socket: Socket, sid: string): Promise<void> => {   
+}

@@ -7,6 +7,7 @@ export const cookiesParser = (cookies: string): object | false => {
     try {
 
         return JSON.parse(cookies);
+        
     } catch {
 
         return false;

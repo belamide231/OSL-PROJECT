@@ -1,21 +1,20 @@
 <main class="h-96 w-72 bg-white flex flex-col overflow-hidden">
 
-    <section class="min-h-16 w-full border-b border-black flex">
+    <section class="min-h-16 w-full bg-primary border-b border-black flex items-end">
 
-        
+        <h1 class="text-white mb-2 ml-4 font-sans text-2xl font-thin">Available Accounts</h1>
 
     </section>
     
     <ul class="w-full overflow-y-auto flex flex-col">
 
-        <li class="min-h-12 w-full border-b border-gray-500"></li>    
-        <li class="min-h-12 w-full border-b border-gray-500"></li>    
-        <li class="min-h-12 w-full border-b border-gray-500"></li>    
-        <li class="min-h-12 w-full border-b border-gray-500"></li>    
-        <li class="min-h-12 w-full border-b border-gray-500"></li>    
-        <li class="min-h-12 w-full border-b border-gray-500"></li>    
-        <li class="min-h-12 w-full border-b border-gray-500"></li>    
-        <li class="min-h-12 w-full border-b border-gray-500"></li>    
+        <li *ngFor="let key of listOfKeyOf(activeAccountsDataTest)" (click)="this" class="min-h-12 w-full border-b border-b-stone-300 flex items-center flex-row cursor-pointer hover:bg-slate-200 select-none">
+
+            <div class="h-10 w-10 bg-accent rounded-full ml-1 flex items-center justify-center text-white">{{activeAccountsDataTest[key].name[0]}}</div>
+            
+            <h3 class="ml-2 mt-1">{{activeAccountsDataTest[key].name}}</h3>
+
+        </li>    
 
     </ul>
 

@@ -1,6 +1,6 @@
 import { mysql, redis } from "../app";
 import { User } from "../interfaces/user";
-import { generateAccessToken } from "../utilities/jwt";
+
 
 export const getCompanyThemeService = async (user: User): Promise<number | object> => {
     
@@ -24,24 +24,48 @@ export const getCompanyThemeForUnauthenticatedUsersService = async (sid: string,
 
     try {
 
-        const key = `companies:${company}:theme`;
-        const themeInCache = await redis.con.get(key);
+        const userKey = `company:${company}:customer:${sid}`;
+        const addressJson = JSON.stringify(address);
+        await redis.con.set(userKey, addressJson);
+
+        const companyThemeKey = `company:${company}:theme`;
+        const themeInCache = await redis.con.get(companyThemeKey);
+
         if(!themeInCache) {
 
-            const [[themeInDb]] = await mysql.promise().query('SELECT primary_color, secondary_color, whites_color FROM tbl_company_theme WHERE company = ?', [company]) as any;
+            const [[themeInDb]] = await mysql.promise().query('SELECT primary_color, secondary_color, accent_color, whites_color FROM tbl_company_theme WHERE company = ?', [company]) as any;
             const stringifiedTheme = JSON.stringify(themeInDb);
-            await redis.con.set(key, stringifiedTheme);
+            await redis.con.set(companyThemeKey, stringifiedTheme);
 
             return themeInDb;
         }
-        
-        return JSON.parse(themeInCache) as { primary_color: string, secondary_color: string, whites_color: string };
+
+        return JSON.parse(themeInCache);
 
     } catch (error) {
 
         console.log('MYSQL ERROR');
         console.log(error);
 
+        return 500;
+    }
+}
+
+
+export const getActiveAccountsInSpecificCompanyService = async (company: string): Promise<string | null | number> => {
+
+    try {
+
+        const specificCompanyActiveAccounts = `companies:${company}:accounts`;
+        const cachedActiveClientsInSpecificComapny = await redis.con.get(specificCompanyActiveAccounts);
+
+        return cachedActiveClientsInSpecificComapny;
+
+    } catch (error) {
+        
+        console.log('MYSQL/REDIS ERROR');
+        console.log(error);
+        
         return 500;
     }
 }

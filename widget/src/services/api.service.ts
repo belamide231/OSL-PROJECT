@@ -13,8 +13,17 @@ export class ApiService {
   constructor(private http: HttpClient) {}
 
 
-  public getCompanyThemeForUnauthenticatedUsersService = (address: { country: string, city: string, street: string } | {}): Observable<number | { primary_color: string, secondary_color: string, whites_color: string }> => {
+  public getCompanyThemeForUnauthenticatedUsersApi = (address: { country: string, city: string, street: string } | {}): Observable<number | { primary_color: string, secondary_color: string, whites_color: string }> => {
     return this.http.post(API.endpoint('unauthenticated/company/theme'), address, API.headers()).pipe(map((response: any) => {
+      return JSON.parse(response.body);
+    }), catchError((error) => {
+      return of(error.status);
+    }));
+  }
+
+
+  public getAvailableAccountsInASpecificCompanyApi = () => {
+    return this.http.post(API.endpoint('get/active/accounts'), null, API.headers()).pipe(map((response: any) => {
       return JSON.parse(response.body);
     }), catchError((error) => {
       return of(error.status);

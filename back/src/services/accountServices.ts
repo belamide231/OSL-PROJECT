@@ -13,16 +13,19 @@ export const loginAccountService = async (data: loginAccountDto): Promise<any> =
     try {
 
         const result = (await mysql.promise().query(`CALL login_account(?)`, [data.username]) as any)[0][0][0];
-        if(result.id === null) 
+        if(result.id === null) {
             return { status: 404 };
+        }
     
         const match = await comparePassword(data.password, result.password);
-        if(!match)
+        if(!match) {
             return { status: 401 };
+        }
     
         const rtk = generateRefreshToken(result.id, result.name, result.company, result.role, result.picture);
-        if(!rtk)
+        if(!rtk) {
             return { status: 500 }
+        }
             
         return { status: 200, rtk };
 
@@ -83,7 +86,7 @@ export const inviteToSignupService = async (data: inviteToSignupDto): Promise<nu
     } catch {
 
         return 400;
-    } 
+    }
 
     return 200;
 }

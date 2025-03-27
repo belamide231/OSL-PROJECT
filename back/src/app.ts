@@ -53,7 +53,10 @@ export const io = new Server(server, {
     }
 });
 
+
+
 // Balhinonon nis redis, kay di ta mag rely ug pa sud ug data satong hosting kay basin ma overflow.
+// key nato users:role:id
 export const socketClients: socketClientsInterface = {
     clientConnections: {},
     adminsId: [],
@@ -61,6 +64,8 @@ export const socketClients: socketClientsInterface = {
     superUsersId: [],
     usersId: []
 };
+
+
 export const sids: Record<string, string> = {}
 export const cookieOptions: CookieOptions = {
     httpOnly: true,
@@ -113,6 +118,8 @@ io.on('connection', connection);
 
 (async () => {
     if(mysql && await redis.con.ping()) {
-        server.listen(process.env.CLOUD_HOST ? process.env.PORT : 3000, () => console.log(`RUNNING ON PORT: ${process.env.CLOUD_HOST ? process.env.PORT : '3000'}`));
+        server.listen(process.env.CLOUD_HOST ? process.env.PORT : 3000, () => {
+            console.log(`RUNNING ON PORT: ${process.env.CLOUD_HOST ? process.env.PORT : '3000'}`);
+        });
     }
 })();
