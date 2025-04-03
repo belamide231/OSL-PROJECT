@@ -14,8 +14,9 @@ export const isAuthenticated = async (req: Request, res: Response, next: NextFun
 
             res.clearCookie('atk').clearCookie('rtk');
 
-            if(req.method === 'POST')
+            if(req.method === 'POST') {
                 return res.sendStatus(401);
+            }
 
             res.cookie('unauthorized', true);
             return res.redirect('/login');
@@ -45,7 +46,7 @@ export const isAuthenticated = async (req: Request, res: Response, next: NextFun
     
             await redis.con.set(sid, JSON.stringify(payload), { EX: 60 * 60 });
     
-        } catch {
+        } catch(err) {
 
             return res.status(500).redirect('/login');
         } 

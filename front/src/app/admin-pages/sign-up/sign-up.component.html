@@ -1,0 +1,8 @@
+<div class="h-[100vh] py-32 px-80">
+    <form (ngSubmit)="register()" class="flex flex-col gap-3 py-60 px-80 my-auto bg-accent rounded-sm">
+        <h1 class="text-xl">Enter your username and password</h1>
+        <input [(ngModel)]="username" name="username" class="border border-black h-10 pl-5" type="text" placeholder="Username">
+        <input [(ngModel)]="password" name="password" class="border border-black h-10 pl-5" type="password" placeholder="Password">
+        <input class="border border-black h-10" type="submit">
+    </form>
+</div>

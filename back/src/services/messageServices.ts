@@ -1,4 +1,4 @@
-import { mysql, socketClients, io, redis } from "../app";
+import { mysql, io, redis } from "../app";
 import { sendMessageDto } from "../dto/messageController/sendMessageDto";
 import { validRoles } from "../validations/validRoles";
 import { Message } from "../model/messageModel";
@@ -9,51 +9,58 @@ import { User } from "../interfaces/user";
 import { TimeStamp } from "../utilities/stamp";
 import { migrationStatus } from "../calls/migrationStatus";
 import { migrateStatusByLoadingMoreMessages } from "../calls/migrateStatusByLoadingMoreMessages";
+import { Connection } from "../sockets/connection";
 
-export const getActiveClientsService = async (role: string): Promise<{ status: number, result: object | null }> => {
-    if(!validRoles.includes(role)) {
-        return { status: 422, result: null };
+
+export const getActiveClientsService = async (company: string, role: string | null): Promise<any> => {
+
+    let activeUsers: any = [];
+
+    const companies = ['ibc', 'jet', 'gis'];
+
+    const activeAccountsIdList = await redis.con.lRange(`company:${company}:active_users:account:list`, 0, -1);
+    if(activeAccountsIdList.length !== 0) {
+        const activeAccountsInformation = (await Promise.all(
+            activeAccountsIdList.map(async accountId => {
+                const accountInformation = await redis.con.get(`specific_user:${accountId}:information`);
+                if(accountInformation === null) {
+                    return false;
+                }
+                return JSON.parse(accountInformation);
+            })
+        )).filter(Boolean);
+        if(activeAccountsInformation.length === 0) {
+            activeUsers = activeUsers.concat(activeAccountsInformation);
+        }
     }
 
-    let actives: any = [];
-    switch(role) {
-        case 'admin':
-            actives = actives.concat(socketClients.adminsId);
-            actives = actives.concat(socketClients.accountsId);
-            break;
-        case 'account':
-            actives = actives.concat(socketClients.adminsId);
-            actives = actives.concat(socketClients.superUsersId);
-            break;
-        case 'superUser':
-            actives = actives.concat(socketClients.accountsId);
-            break;
-        default:
-            break;
+    if(role === 'admin') {
+        const activeAdminsIdListInEachCompany = await Promise.all(companies.map(async company => await redis.con.lRange(`company:${company}:active_users:admin:list`, 0, -1)));
+        let activeAdminsInAllCompanyMergedTogather: any = [];
+        activeAdminsIdListInEachCompany.forEach(eachCompanyAdminList => activeAdminsInAllCompanyMergedTogather = activeAdminsInAllCompanyMergedTogather.concat(eachCompanyAdminList));
+        const activeAdminsInformation = await Promise.all(activeAdminsIdListInEachCompany.map(async adminId => {
+            const adminInformation = await redis.con.get(`specific_user:${adminId}:information`);
+            if(adminInformation === null) {
+                return false;
+            }
+            return JSON.parse(adminInformation);
+        }));
+        activeUsers = activeUsers.concat(activeAdminsInformation.filter(Boolean));
+
+    } else if(role === 'account') {
+
+        const activeAdminsIdList = await redis.con.lRange(`company:${companies}:active_users:admin:list`, 0, -1);
+        const activeAdminInformation = await Promise.all(activeAdminsIdList.map(async adminId => {
+            const adminInformation = await redis.con.get(`specific_user:${adminId}:information`);
+            if(adminInformation === null) {
+                return false;
+            }
+            return JSON.parse(adminInformation);
+        }));
+        activeUsers = activeUsers.concat(activeAdminInformation.filter(Boolean));
     }
 
-    if(actives.length === 0)
-        return { status: 200, result: [] };
-
-    const result = await redis.con.mGet([...actives.map((v: any) => 'db4:' + v.toString())]);
-    const sids = result.map((v: any) => {
-        if(v !== null)
-            return v.toString();
-    }) as string[];
-
-    if(sids.length === 0)
-        return { status: 200, result: [] };
-
-    const data = await redis.con.mGet([...sids]);
-    const json = data.map(v => {
-        if(v !== null)
-            return JSON.parse(v);
-    });
-
-    if(json.length === 0)
-        return { status: 200, result: [] };
-
-    return { status: 200, result: json };
+    return activeUsers;
 }
 
 
@@ -68,12 +75,36 @@ export const sendMessageService = async (senderId: number, data: sendMessageDto)
         setCachedTimer({ chatKey: results[1], users: [senderId, data.receiverId] });
 
         let connections: string[] = [];
-        connections = connections.concat(socketClients.clientConnections[senderId]);
-        connections = connections.concat(socketClients.clientConnections[data.receiverId]);
 
+        /** Tangtangonon */
+        // connections = connections.concat(socketClients.clientConnections[senderId]);
+        // connections = connections.concat(socketClients.clientConnections[data.receiverId]);
+        /** Pinaka last sa tangtangonon */
+
+        /** Ang eh Puli */
+        const senderConnectionsInRedisKey = Connection.Keys.keyForUserConnections(senderId);
+        const senderConnectionsInRedis = await redis.con.lRange(senderConnectionsInRedisKey, 0, -1);
+        if(senderConnectionsInRedis.length !== 0) {
+            connections = connections.concat(senderConnectionsInRedis);
+        }
+
+        const receiverConnectionsInRedisKey = Connection.Keys.keyForUserConnections(data.receiverId);
+        const receiverConnectionInRedis = await redis.con.lRange(receiverConnectionsInRedisKey, 0, -1);
+        if(receiverConnectionInRedis.length !== 0) {
+            connections = connections.concat(receiverConnectionInRedis);
+        }
+        /** Pinaka last sa eh puli */
+
+        /** Tangtangonon */
         io.to(connections).emit('notifyReceiverHisNewMessage', { messageId: results[0], senderId });
-        io.to(socketClients.clientConnections[senderId]).emit('notifyReceiverHisNewMessage', { messageId: results[0], chatmateId: data.receiverId });
-        io.to(socketClients.clientConnections[data.receiverId]).emit('notifyReceiverHisNewMessage', { messageId: results[0], chatmateId: senderId });
+
+        if(senderConnectionsInRedis.length !== 0) {
+            io.to(senderConnectionsInRedis).emit('notifyReceiverHisNewMessage', { messageId: results[0], chatmateId: data.receiverId });
+        }
+        if(receiverConnectionInRedis.length !== 0) {
+            io.to(receiverConnectionInRedis).emit('notifyReceiverHisNewMessage', { messageId: results[0], chatmateId: senderId });
+        }
+        /** Pinaka last sa tangtangonon */
 
         return { uuid: data.uuid };
 
@@ -185,7 +216,7 @@ export const loadChatListServices = async (user: User, chatListLength: number): 
     try {
 
         let redisChatList: any = await redis.con.sendCommand(['FCALL', 'get_chats', '0', user.id.toString()]);
-        let idsOfChatmates: any = [];
+        let idsOfChatmates: any = [];``
 
         if(redisChatList.length !== 0) {
 
@@ -196,7 +227,7 @@ export const loadChatListServices = async (user: User, chatListLength: number): 
                 return x; 
             });
     
-            let [rows, result] = await mysql.promise().query('SELECT first_name as name FROM tbl_profiles WHERE FIND_IN_SET(user_id, ?)', [idsOfChatmates.toString()]) as any;
+            let [rows] = await mysql.promise().query('SELECT first_name as name FROM tbl_profiles WHERE FIND_IN_SET(user_id, ?)', [idsOfChatmates.toString()]) as any;
     
             idsOfChatmates.forEach((x: any, i: number) => {
 
@@ -210,10 +241,15 @@ export const loadChatListServices = async (user: User, chatListLength: number): 
             rows.length !== 0 && await redis.con.sendCommand(['FCALL', 'set_names', '0', JSON.stringify(rows)]);
         }
 
-        let [mysqlChatList, result]: any[] = await mysql.promise().query('CALL get_chat_list(?, ?, ?)', [chatListLength, user.id, idsOfChatmates.toString()]) as any;
-        Array.isArray(mysqlChatList) ? mysqlChatList.pop() : mysqlChatList = [];
+        let [mysqlChatList]: any[] = await mysql.promise().query('CALL get_chat_list(?, ?, ?)', [chatListLength, user.id, idsOfChatmates.toString()]) as any;
+        if(Array.isArray(mysqlChatList)) {
+            mysqlChatList.pop();
+        } else {
+            mysqlChatList = [];
+        }
 
         const chatList = redisChatList.concat(mysqlChatList);
+        
         const order = idsOfChatmates.concat(mysqlChatList.map((x: any) => x[0].chatmate_id));
 
         return { chatList, order };

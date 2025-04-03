@@ -116,6 +116,6 @@ CREATE TABLE tbl_company_theme (
 
 INSERT INTO tbl_company_theme(company, primary_color, secondary_color, accent_color, whites_color) 
 VALUES
-("ibc", "#000000", "#FFFFFF", "#FF0305", "#ffffff"),
-("jet", "#000000", "#FFFFFF", "#FF0305", "#ffffff"),
-("gis", "#1e1e1e", "#adb4b7", "#ffc641", "#ffffff");
+("ibc", "rgb(0, 0, 0)", "rgb(255, 255, 255)", "rgb(255, 3, 5)", "rgb(255, 255, 255)"),
+("jet", "rgb(0, 0, 0)", "rgb(255, 255, 255)", "rgb(255, 3, 5)", "rgb(255, 255, 255)"),
+("gis", "rgb(30, 30, 30)", "rgb(173, 180, 183)", "rgb(255, 198, 65)", "rgb(255, 255, 255)");

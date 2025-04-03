@@ -1,9 +1,15 @@
-import { io, socketClients } from "../app";
-import { socketUser } from "../interfaces/socketUser";
+// import { io, socketClients } from "../app";
+import { io } from "../app";
+import { redis } from "../app";
+import { Connection } from "./connection";
+import { SocketUser } from "../interfaces/socketUser";
 import { editingAllTheChatStatusToDeliveredService, editingTheMessageStatusToDeliveredService, seenChatService } from "../services/messageServices";
 
 
 export const updatingTheChatStatusToSeen = async (receiverId: number, senderId: number): Promise<void> => {
+    console.log(receiverId);
+    console.log(senderId);
+
     const result = await seenChatService(receiverId, senderId) as any;
     if(isFinite(result)) {
         return;
@@ -11,9 +17,17 @@ export const updatingTheChatStatusToSeen = async (receiverId: number, senderId: 
 
     result['receiverId'] = receiverId;
     
-    const senderConnection = socketClients.clientConnections[senderId];
-    if(senderConnection) {
-        io.to(senderConnection).emit('notifySenderThatChatIsBeingSeen', result);
+    /* Tangtangonon */
+    // const senderConnections = socketClients.clientConnections[senderId];
+    /* Katapusans tangtangonon */
+
+    /* Mo puli */
+    const senderConnectionsKey = Connection.Keys.keyForUserConnections(senderId);
+    const senderConnections = await redis.con.lRange(senderConnectionsKey, 0, -1);
+    /* Katapusans mo puli */
+
+    if(senderConnections) {
+        io.to(senderConnections).emit('notifySenderThatChatIsBeingSeen', result);
     }
 }
 
@@ -24,8 +38,17 @@ export const editingTheChatStatusToDelivered = async (receiverId: number, sender
         return;
     }
 
-    const senderConnection = socketClients.clientConnections[senderId];
-    io.to(senderConnection).emit('notifySenderThatTheMessageIsBeingDelivered', { receiverId, stamp: result.stamp });
+    /* Tangtangonon */
+    // const senderConnection = socketClients.clientConnections[senderId];
+    /* Katapusans tangtangonon */
+
+    /* Mo puli */
+    const senderConnectionsKey = Connection.Keys.keyForUserConnections(senderId);
+    const senderConnections = await redis.con.lRange(senderConnectionsKey, 0, -1);    
+    /* Katapusans mo puli */
+
+
+    io.to(senderConnections).emit('notifySenderThatTheMessageIsBeingDelivered', { receiverId, stamp: result.stamp });
 }
 
 
@@ -35,14 +58,31 @@ export const editingAllTheChatStatusToDelivered = async (receiver: number): Prom
         return;
     }
 
-    const connections = ((): string[] => {
-        let listOfConnections: string[] = [];
-        result.chatmates.forEach((senderId: number) => {
-            const senderConnection: string[] = socketClients.clientConnections[senderId];
-            listOfConnections = listOfConnections.concat(senderConnection);
-        });
-        return listOfConnections;
+    /* Tangtangonon */
+    // const connections = ((): string[] => {
+    //     let listOfConnections: string[] = [];
+    //     result.chatmates.forEach((senderId: number) => {
+    //         const senderConnection: string[] = socketClients.clientConnections[senderId];
+    //         listOfConnections = listOfConnections.concat(senderConnection);
+    //     });
+    //     return listOfConnections;
+    // })();
+    /* Katapusans tangtangonon */
+
+    /* Mo Puli */
+    const usersListOfConnections = await Promise.all(
+        result.chatmates.map((chatmate: number) => {
+            const chatmateKey = Connection.Keys.keyForUserConnections(chatmate);
+            return redis.con.lRange(chatmateKey, 0, -1);
+        })
+    );
+
+    const connections = (() => {
+        let connection: string[] = [];
+        usersListOfConnections.forEach(userListOfConection => connection = connection.concat(userListOfConection));
+        return connection;
     })();
+    /* Katapusans mo puli */
 
     if(connections.length === 0) {
         return;
@@ -52,13 +92,15 @@ export const editingAllTheChatStatusToDelivered = async (receiver: number): Prom
 }
 
 
-export const typingMessage = async (user: socketUser, chatmateId: number): Promise<void> => {
+export const typingMessage = async (user: SocketUser, chatmateId: number): Promise<void> => {
 
-    io.to(socketClients.clientConnections[chatmateId]).emit("typing message", user.id);
+    const chatmateConnections = await redis.con.lRange(chatmateId.toString(), 0, -1);
+    io.to(chatmateConnections).emit("typing message", user.id);
 }
 
 
-export const blankMessage = async (user: socketUser, chatmateId: number): Promise<void> => {
+export const blankMessage = async (user: SocketUser, chatmateId: number): Promise<void> => {
 
-    io.to(socketClients.clientConnections[chatmateId]).emit("blank message", user.id);
+    const chatmateConnections = await redis.con.lRange(chatmateId.toString(), 0, -1);
+    io.to(chatmateConnections).emit("blank message", user.id);
 }

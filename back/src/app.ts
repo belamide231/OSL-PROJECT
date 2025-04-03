@@ -16,8 +16,7 @@ dontenv.config();
 
 import { getMysqlConnection } from './configuration/mysql';
 import { getRedisConnection } from './configuration/redis';
-import { connection } from './sockets/connection';
-import { socketClientsInterface } from './interfaces/socketClientsInterface';
+import { Connection } from './sockets/connection';
 import { getLevelConnection } from './configuration/level';
 import { refresher } from './configuration/refresher';
 import { messageController } from './controllers/messageController';
@@ -53,19 +52,6 @@ export const io = new Server(server, {
     }
 });
 
-
-
-// Balhinonon nis redis, kay di ta mag rely ug pa sud ug data satong hosting kay basin ma overflow.
-// key nato users:role:id
-export const socketClients: socketClientsInterface = {
-    clientConnections: {},
-    adminsId: [],
-    accountsId: [],
-    superUsersId: [],
-    usersId: []
-};
-
-
 export const sids: Record<string, string> = {}
 export const cookieOptions: CookieOptions = {
     httpOnly: true,
@@ -75,18 +61,17 @@ export const cookieOptions: CookieOptions = {
     path: '/',
 };
 
-app
-.use(cookieParser())
-.use(json())
-.use(urlencoded({ 
+app.use(cookieParser());
+app.use(json());
+app.use(urlencoded({ 
     extended: true 
-}))
-.use(cors({
+}));
+app.use(cors({
     origin,
     credentials: true
-}))
-.set("trust proxy", 1)
-.use(session({ 
+}));
+app.set("trust proxy", 1);
+app.use(session({ 
     secret: process.env.SESSION_SECRET ? process.env.SESSION_SECRET : 'secret',
     store: new store({
         checkPeriod: 86400000
@@ -96,14 +81,14 @@ app
     cookie: { 
         secure: false 
     } 
-}))
-.use(passport.initialize())
-.use(passport.session())
-.use(pageController)
-.use(messageController)
-.use(accountController)
-.use(companyController)
-.use(widgetController);
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(pageController);
+app.use(messageController);
+app.use(accountController);
+app.use(companyController);
+app.use(widgetController);
 
 refresher();
 io.engine.on('initial_headers', (headers, request) => {
@@ -114,7 +99,7 @@ io.engine.on('initial_headers', (headers, request) => {
         headers['Set-Cookie'] = `sid=${v4()}; Path=/; HttpOnly`;
     }
 })
-io.on('connection', connection);    
+io.on('connection', Connection.connectionAuthenticator);    
 
 (async () => {
     if(mysql && await redis.con.ping()) {

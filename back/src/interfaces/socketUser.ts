@@ -1,4 +1,4 @@
-export interface socketUser {
+export interface SocketUser {
     id:         number;
     name:       string;
     role:       string;

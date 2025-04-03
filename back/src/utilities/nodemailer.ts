@@ -51,6 +51,8 @@ export const nodeMailer = async (email: string, url: string): Promise<boolean> =
         
     } catch (error) {
 
+        console.log(error);
+
         return false;
     }
 

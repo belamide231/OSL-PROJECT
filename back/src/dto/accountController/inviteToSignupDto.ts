@@ -1,5 +1,5 @@
 export interface inviteToSignupDto {
-    email: string,
-    role: string,
-    company: string
-}
+    gmail: string,
+    company: string,
+    role: string
+};

@@ -7,46 +7,51 @@ import { upload } from "../utilities/multer";
 import { dropboxUpload } from "../utilities/dropbox";
 import { loadMessageDto } from "../dto/messageController/loadMessageDto";
 import { User } from "../interfaces/user";
+import { authenticationExtractor } from "../middlewares/authenticationExtractor";
 
 
 export const messageController = Router();
-messageController
 
 
-.post('/getActiveClients', isAuthenticated, async (req: Request, res: Response): Promise<any> => {
-    const response = await getActiveClientsService((req.user as any).role);
-    return response.status !== 200 ? res.sendStatus(response.status) : res.status(200).json(response.result);
-})
+messageController.post('/getActiveClients', authenticationExtractor, async (req: Request, res: Response): Promise<any> => {
+    const user = req.user as any;
+
+    const response = await getActiveClientsService(user.role, user.company);
+    if(typeof response === 'number' && isFinite(response)) {
+        return res.sendStatus(response);
+    }
+    return res.json(response);
+});
 
 
-.post('/sendMessage', isAuthenticated, upload.single('file'), dropboxUpload, async (req: Request, res: Response): Promise<any> => {
+messageController.post('/sendMessage', isAuthenticated, upload.single('file'), dropboxUpload, async (req: Request, res: Response): Promise<any> => {
     const response = await sendMessageService((req.user as any).id, req.body as sendMessageDto) as any;
     if(isFinite(response)) {
         return res.sendStatus(response);
     }
     return res.json(response);
-})
+});
 
 
-.post('/loadMessage', isAuthenticated, async (req: Request, res: Response): Promise<any> => {
+messageController.post('/loadMessage', isAuthenticated, async (req: Request, res: Response): Promise<any> => {
     const response = await loadMessageService(req.body as loadMessageDto, (req.user as any).id, (req.user as any).name) as any;
     if(isFinite(response)) {
         return res.sendStatus(response);
     }
     return res.json(response);
-})
+});
 
 
-.post('/loadChatList', isAuthenticated, async (req: Request, res: Response): Promise<any> => {
+messageController.post('/loadChatList', isAuthenticated, async (req: Request, res: Response): Promise<any> => {
     const response: any = await loadChatListServices(req.user as User, req.body.chatListLength) as any;
-    if(isFinite(response)) {
+    if(typeof response === 'number' && isFinite(response)) {
         return res.sendStatus(response);
     }
     return res.json(response);
-})
+});
 
 
-.post('/loadMoreMessages', isAuthenticated, async (req: Request, res: Response): Promise<any> => {
+messageController.post('/loadMoreMessages', isAuthenticated, async (req: Request, res: Response): Promise<any> => {
 
     interface RequestDTO {
         chatmateId:                     number,
@@ -61,6 +66,4 @@ messageController
     }
 
     return res.json(response);
-})
-
-
+});

@@ -4,7 +4,7 @@ import { isAuthenticated } from "../guards/isAuthenticated";
 import { User } from "../interfaces/user";
 export const companyController = Router();
 
-
+    
 const domains = {
     'localhost:3000':   'ibc',
     'localhost:4200':   'ibc',

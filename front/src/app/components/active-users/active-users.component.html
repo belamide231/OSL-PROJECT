@@ -1,0 +1,11 @@
+<main class="max-w-64 bg-transparent mx-4 mt-4 flex flex-col gap-5">
+  <input class="h-10 rounded-lg pl-3 ring-1 ring-accent outline-none" type="text" placeholder="Search...">
+  <section class="overflow-y-auto bg-transparent mb-1 ring-1 ring-accent rounded-lg -scroll-mx-52">
+    <ul class="flex flex-row">
+      <li *ngFor="let active of data.chat.activeScopedUser" class="flex min-h-20 min-w-20 flex-col justify-center items-center cursor-pointer hover:bg-accent bg-opacity-0 rounded-3xl transition duration-200">
+        <label class="h-[43px] w-[43px] bg-accent text-white rounded-full flex justify-center items-center pointer-events-none select-none">{{active[0].toUpperCase()}}</label>
+        <p class="text-xs text-primary max-w-16 pointer-events-none select-none">{{active}}</p> 
+      </li>
+    </ul>
+  </section>
+</main>
