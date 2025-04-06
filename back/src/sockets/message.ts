@@ -7,8 +7,6 @@ import { editingAllTheChatStatusToDeliveredService, editingTheMessageStatusToDel
 
 
 export const updatingTheChatStatusToSeen = async (receiverId: number, senderId: number): Promise<void> => {
-    console.log(receiverId);
-    console.log(senderId);
 
     const result = await seenChatService(receiverId, senderId) as any;
     if(isFinite(result)) {

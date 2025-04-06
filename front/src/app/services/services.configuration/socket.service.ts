@@ -1,10 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Socket, io } from 'socket.io-client';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, map, Observable } from 'rxjs';
 
 import { ApiService } from './api.service';
 import { dns } from '../../../environment/dns';
-import { AudioService } from './audio.service';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +12,6 @@ export class SocketService {
   
   
   private socket: Socket;
-
 
   // Balhinonons ChatService
   private _chatList: BehaviorSubject<any[]> = new BehaviorSubject<any[]>([]);
@@ -32,6 +30,8 @@ export class SocketService {
 
   // Balhinonons ChatService
   public chatmateId: number = 0;
+
+  public isMessagesLoading = false;
 
   constructor(private readonly api: ApiService) { 
 
@@ -333,6 +333,7 @@ export class SocketService {
 
         modifiedChatList[chatIndex] = modifiedChatList[chatIndex].concat(res);
         this._chatList.next(modifiedChatList);
+        this.isMessagesLoading = false;
       }
     });
   }

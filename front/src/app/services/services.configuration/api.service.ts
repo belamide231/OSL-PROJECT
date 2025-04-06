@@ -65,7 +65,7 @@ export class ApiService {
 
   loadActiveClients = ():Observable<any> => this.http.post(this.dns('getActiveClients'), null, this.headers).pipe(map((response: any) => JSON.parse(response.body)), catchError((error) => of(error.status)));
   
-  loadChatList = (chatListLength: number): Observable<object[] | number> => {
+  loadChatList = (chatListLength: number): Observable<{ chatList: any[], order: any[] } | number> => {
     return this.http.post(this.dns('loadChatList'), { chatListLength } as loadChatListDto, this.headers).pipe(
       map((response: any) => {
         return JSON.parse(response.body);

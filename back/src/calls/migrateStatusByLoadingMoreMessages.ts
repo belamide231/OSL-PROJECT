@@ -7,14 +7,6 @@ export const migrateStatusByLoadingMoreMessages = (json: {
     deliveredAt: string | null, 
     seenAt: string | null 
 }): string => {
-    
-    return `
-        CALL migrate_status_by_loading_more_messages(
-            ${json.senderId},
-            ${json.receiverId},
-            ${json.status},
-            ${sqlDateConverter(json.deliveredAt)},
-            ${sqlDateConverter(json.seenAt)},
-        );\n
-    `;
+    // console.log(json);
+    return `CALL migrate_status_by_loading_more_messages(${json.senderId}, ${json.receiverId}, '${json.status}', ${sqlDateConverter(json.deliveredAt)}, ${sqlDateConverter(json.seenAt)});\n`;
 }

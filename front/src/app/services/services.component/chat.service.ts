@@ -15,12 +15,14 @@ export class ChatService {
     'ash'
   ];
   public chatList = [];
+  public isChatmateTyping = false;
 
+  constructor(public readonly api: ApiService, public readonly socket: SocketService) {
 
-  constructor(private readonly api: ApiService, private readonly socket: SocketService) {
-    this.api.loadChatList(this.chatList.length).subscribe((response: any) => {
-      console.log(response);
+    this.api.loadChatList(this.chatList.length).subscribe((response: any /* { chatList: any[], order: any[] } */) => {
       this.chatList = response.chatList;
     });
+
+    this.socket.isTyping.subscribe(x => this.isChatmateTyping = x);
   }
 }

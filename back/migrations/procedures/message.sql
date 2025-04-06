@@ -128,7 +128,7 @@ END;;
 
 
 
-CREATE PROCEDURE migrate_status_by_loading_more_messages(
+CREATE PROCEDURE migrate_status_by_loading_more_messages (
   IN in_sender_id INT,
   IN in_receiver_id INT,
   IN in_sender_message_status VARCHAR(10),
@@ -162,7 +162,11 @@ END;;
 
 
 
-CREATE PROCEDURE load_more_messages(IN in_message_length INT, IN in_user_id INT, IN in_chatmate_id INT, IN in_limit INT)
+CREATE PROCEDURE load_more_messages(
+  IN in_message_length INT, 
+  IN in_user_id INT, 
+  IN in_chatmate_id INT, 
+  IN in_limit INT)
 BEGIN
 
   SELECT (

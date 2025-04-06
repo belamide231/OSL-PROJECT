@@ -1,6 +1,5 @@
 import { mysql, io, redis } from "../app";
 import { sendMessageDto } from "../dto/messageController/sendMessageDto";
-import { validRoles } from "../validations/validRoles";
 import { Message } from "../model/messageModel";
 import { setCachedTimer } from "../utilities/bullmq";
 import { insertMessage } from "../calls/InsertMessage";
@@ -173,6 +172,8 @@ export const loadMessageService = async (data: loadMessageDto, userId: number, n
         const chatmateId = message.sender_id !== userId ? message.sender_id : message.receiver_id;
         let chatmate = await redis.con.get(`chats:users:${chatmateId}:name`);
 
+        console.log('chatmate', chatmate);
+
         if(!chatmate) {
             
             chatmate = (await mysql.promise().query(`SELECT first_name FROM tbl_profiles WHERE user_id = ?`, [chatmateId]) as any)[0][0].first_name as string;
@@ -263,6 +264,7 @@ export const loadChatListServices = async (user: User, chatListLength: number): 
 }
 
 
+
 export const loadMoreMessagesService = async (user: User, data: { lengthOfExistingMessages: number, chatmateId: number }): Promise<number | object[]> => {
     if(isNaN(data.chatmateId) || isNaN(data.lengthOfExistingMessages)) {
         return 422;
@@ -306,11 +308,20 @@ export const loadMoreMessagesService = async (user: User, data: { lengthOfExisti
                 sql += migrateStatusByLoadingMoreMessages(jsonStatus);
             }
 
-
             sql += `CALL load_more_messages(0, ${user.id}, ${data.chatmateId}, ${15 - jsonCache.length});`;
+            const [db] = await mysql.promise().query(sql) as any;
 
-            const [[db]] = await mysql.promise().query(sql) as any;
-            jsonCache.messages = jsonCache.messages.concat(db);
+            db.forEach((element: any, index: number) => {
+                if(typeof element === 'object' && element !== null) {
+                    db.splice(index, 1);
+                }
+            });
+
+            if(Array.isArray(jsonCache.message)) {
+                jsonCache.messages = jsonCache.messages.concat(db[0]);
+            } else {
+                jsonCache.messages = db[0];
+            }
         }
 
         return jsonCache.messages;

@@ -17,31 +17,6 @@
         <h3 class="text-primary font-semibold bg-accent text-white text-center text-xl py-2 rounded-lg">
           Inbox
         </h3>
-        <div  (click)="showComposeModal()" class=" ring-1 ring-accent flex justify-evenly cursor-pointer text-primary py-2 px-3 rounded-lg hover:bg-accent transition duration-200 ease-in-out">
-          <span>Create a message</span>
-          <svg class="w-5 h-5" viewBox="0 0 24 24" id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg"><defs><style>.cls-1{fill:none;stroke:#020202;stroke-miterlimit:10;stroke-width:1.91px;}</style></defs><line class="cls-1" x1="8.18" y1="10.07" x2="15.82" y2="10.07"/><line class="cls-1" x1="12" y1="6.25" x2="12" y2="13.89"/><path class="cls-1" d="M1.5,5.3v9.54a3.82,3.82,0,0,0,3.82,3.82H7.23v2.86L13,18.66h5.73a3.82,3.82,0,0,0,3.82-3.82V5.3a3.82,3.82,0,0,0-3.82-3.82H5.32A3.82,3.82,0,0,0,1.5,5.3Z"/></svg> 
-        </div>
-
-        <ul class="w-56 flex justify-between items-center">
-          <li
-            *ngFor="let category of ['all', 'assigned']"
-            (click)="changeCategory(category)"
-            [class.bg-red-300]="selectedCategory === category"
-            class="cursor-pointer ring-1 ring-accent  text-center text-primary w-[45%] py-2 px-3 rounded-lg hover:bg-accent transition duration-200 ease-in-out"
-          >
-            {{ category | titlecase }}
-            <span *ngIf="category === 'all'" class="ml-2 text-sm font-semibold text-primary">({{ messages.length }})</span>
-          </li>
-        </ul>
-
-
-        <div class="mt-4">
-          <input
-            type="text"
-            class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="&#x1F50E; Search contacts..."
-          />
-        </div>
 
         <ul class="space-y-3 overflow-y-auto overflow-x-hidden h-[40vh]">
           <li *ngFor="let chatHead of chatListHeads"
@@ -58,12 +33,6 @@
               <p class="text-sm text-gray-600 truncate max-w-[85%]" [ngClass]="chatHead.chatmate_id === chatHead.sender_id && chatHead.content_status !== 'seen' ? 'font-bold' : '' ">{{ chatHead.chatmate_id === chatHead.sender_id ? chatHead.chatmate + ': ' + chatHead.content : 'You: ' + chatHead.content }}</p>
               <div [ngClass]="chatHead.content_status === 'seen' && chatHead.sender_id !== chatHead.chatmate_id ? 'opacity-1': 'opacity-0' " class="rounded-full bg-accent text-xs font-mono size-4 flex justify-center items-center text-white" style="animation: opacity .3s ease;">{{chatHead.chatmate[0]}}</div>  
             </div>
-            <!-- <div class="text-xs text-gray-500 mt-2">
-              <span *ngIf="message.priority" class="text-red-500 font-semibold">Priority</span>
-              <span *ngIf="message.status === 'open'" class="text-green-500 ml-2">Open</span>
-              <span *ngIf="message.status === 'pending'" class="text-yellow-500 ml-2">Pending</span>
-              <span *ngIf="message.status === 'closed'" class="text-gray-500 ml-2">Closed</span>
-            </div> -->
           </li>
         </ul>
       </div>
@@ -135,14 +104,26 @@
 
     
     <!-- Chat Messages -->
-    <div id="chatContainer" class="flex flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-4 flex-col-reverse min-h-fit">
+    <div id="chatContainer" class="flex flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-4 flex-col-reverse">
       <div *ngIf="chat" class="w-full scroll-smooth flex flex-col-reverse">
 
         <!-- TYPING ANIMATION -->
-        <section style="transition: margin .3s ease;" class="pt-2" [ngClass]="isChatmateTyping ? 'mb-9 status-in' : 'mb-0 status-out' ">
+        <!-- If ever sayup, tangtanga -->
+        <!-- <section style="transition: margin .3s ease;" class="pt-2" [ngClass]="isChatmateTyping ? 'mb-9 status-in' : 'mb-0 status-out' ">
           <div class="flex flex-col items-start">
             <div class="bg-accent opacity-85 rounded-3xl max-w-[75%] w-fit shadow-md flex flex-row" [ngClass]="isChatmateTyping ? 'animate-fadeInScale p-3' : 'animate-fadeOutScale' " style="overflow: hidden; transition: .3s ease;" [ngStyle]="{ 'height': isChatmateTyping ? '40px': '0px' }">
               <span style="overflow: hidden; transition: .3s ease;" [ngStyle]="{ 'height': isChatmateTyping ? '40px': '0px' }" class="w-5" href="https://git.io/typing-svg">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><circle fill="#FFFFFF" stroke="#FFFFFF" stroke-width="2" r="15" cx="40" cy="65"><animate attributeName="cy" calcMode="spline" dur="2" values="65;135;65;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="-.4"></animate></circle><circle fill="#FFFFFF" stroke="#FFFFFF" stroke-width="2" r="15" cx="100" cy="65"><animate attributeName="cy" calcMode="spline" dur="2" values="65;135;65;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="-.2"></animate></circle><circle fill="#FFFFFF" stroke="#FFFFFF" stroke-width="2" r="15" cx="160" cy="65"><animate attributeName="cy" calcMode="spline" dur="2" values="65;135;65;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="0"></animate></circle></svg>
+              </span>
+            </div>
+          </div>
+        </section> -->
+
+        <!-- Mao ning gi puli -->
+        <section style="transition: margin .3s ease;" class="pt-2" [ngClass]="data.chat.isChatmateTyping ? 'mb-9 status-in' : 'mb-0 status-out' ">
+          <div class="flex flex-col items-start">
+            <div class="bg-accent opacity-85 rounded-3xl max-w-[75%] w-fit shadow-md flex flex-row" [ngClass]="data.chat.isChatmateTyping ? 'animate-fadeInScale p-3' : 'animate-fadeOutScale' " style="overflow: hidden; transition: .3s ease;" [ngStyle]="{ 'height': data.chat.isChatmateTyping ? '40px': '0px' }">
+              <span style="overflow: hidden; transition: .3s ease;" [ngStyle]="{ 'height': data.chat.isChatmateTyping ? '40px': '0px' }" class="w-5" href="https://git.io/typing-svg">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><circle fill="#FFFFFF" stroke="#FFFFFF" stroke-width="2" r="15" cx="40" cy="65"><animate attributeName="cy" calcMode="spline" dur="2" values="65;135;65;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="-.4"></animate></circle><circle fill="#FFFFFF" stroke="#FFFFFF" stroke-width="2" r="15" cx="100" cy="65"><animate attributeName="cy" calcMode="spline" dur="2" values="65;135;65;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="-.2"></animate></circle><circle fill="#FFFFFF" stroke="#FFFFFF" stroke-width="2" r="15" cx="160" cy="65"><animate attributeName="cy" calcMode="spline" dur="2" values="65;135;65;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="0"></animate></circle></svg>
               </span>
             </div>

@@ -36,7 +36,6 @@ export class ChatComponent implements AfterViewInit {
   public chatListHeads: any = [];
   public chatList: any[] = [];
   public chat: any = [];
-  public isChatmateTyping: boolean = false;
   public isTimePassed: number = 0;
   public isMessagesLoading: boolean = false;
   public isUserTyping: boolean = false;
@@ -46,9 +45,7 @@ export class ChatComponent implements AfterViewInit {
     'bensoy',
   ];
 
-  constructor(private readonly socket: SocketService, private readonly api: ApiService, public readonly data: DataService) {
-    this.socket.isTyping.subscribe(x => this.isChatmateTyping = x);
-  }
+  constructor(private readonly socket: SocketService, private readonly api: ApiService, public readonly data: DataService) { }
 
   ngAfterViewInit(): void {
     const chatContainer = document.getElementById("chatContainer");
@@ -56,12 +53,14 @@ export class ChatComponent implements AfterViewInit {
     chatContainer?.addEventListener("scroll", () => {
 
       if(chatContainer.clientHeight + Math.abs(chatContainer.scrollTop) + 1 >= chatContainer.scrollHeight || chatContainer.clientHeight + Math.abs(chatContainer.scrollTop) >= chatContainer.scrollHeight) {
-        if(this.isMessagesLoading)
+        if(this.isMessagesLoading) {
           return;
+        }
 
         this.isMessagesLoading = true;
         const existingMessageLength = this.chat.length;
-        this.socket.loadMoreMessages(existingMessageLength, this.socket.chatmateId);
+        const loaded = this.socket.loadMoreMessages(existingMessageLength, this.socket.chatmateId);
+        console.log(loaded);
       }
     });
 
@@ -85,10 +84,8 @@ export class ChatComponent implements AfterViewInit {
     });
   }
 
+  // Preserved
   public getStatusAndStamp = (object: any): any => {
-
-
-    console.log(new Date(object.sent_at).toLocaleString());
 
     switch(object.content_status) {
       case 'sending':
@@ -104,14 +101,17 @@ export class ChatComponent implements AfterViewInit {
     }
   }
 
+  // Preserved
   public timePassed = (stamp: string) => {
     return dayjs(stamp).fromNow();
   }
 
+  // Preserved
   public setTimePassed = (messageId: number) => {
     this.isTimePassed = messageId;
   }
 
+  
   public deleteTimePassed = () => {
     this.isTimePassed = 0;
   }
