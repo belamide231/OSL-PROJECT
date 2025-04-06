@@ -1,7 +1,8 @@
 {
-    "editor.fontFamily": "Menlo, Monaco, 'Courier New', monospace",
+    "editor.fontFamily": "Consolas, 'Courier New', monospace",
     "Lua.diagnostics.globals": [
         "cjson",
         "redis"
-    ]
+    ],
+    "editor.codeLensFontFamily": "Consolas, 'Courier New', monospace"
 }
