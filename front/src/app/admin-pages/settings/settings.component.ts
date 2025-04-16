@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { SidebarComponent } from '../sidebar/sidebar.component';
-import { DataService } from '../../services/data.service';
+import { SocketService } from '../../services/socket.service';
+import { ApiService } from '../../services/api.service';
 
 @Component({
   selector: 'app-settings',
@@ -10,5 +11,6 @@ import { DataService } from '../../services/data.service';
   styleUrl: './settings.component.css'
 })
 export class SettingsComponent {
-  constructor(public readonly data: DataService) {}
+  constructor(
+    private readonly api: ApiService) {}
 }

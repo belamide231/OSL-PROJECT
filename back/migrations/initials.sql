@@ -1,28 +1,22 @@
-CALL create_account("ibcadmin", "$2a$10$VEflIDT1RYW0Tj47vb5D..ZCKGT0oOVsc0y2xS6O9MHKew/oeZXrS", "belamidemills29@gmail.com", "ibc", "admin");
+CALL create_account("ibcadmin", "$2a$10$VEflIDT1RYW0Tj47vb5D..ZCKGT0oOVsc0y2xS6O9MHKew/oeZXrS", "belamidemills29@gmail.com", "*", "admin");
 UPDATE tbl_profiles SET first_name = 'IBC ADMIN' WHERE user_id = 1;
 
-CALL create_account("jetadmin", "$2a$10$Iv8njZz1ljKIi8hvGjdAquLvGfZVD79zgdSj2H3nkYbEvWtnQeCCy", "belamidemills29@gmail.com", "jet", "admin");
-UPDATE tbl_profiles SET first_name = 'JET ADMIN' WHERE user_id = 2;
-
-CALL create_account("gisadmin", "$2a$10$36BvogjTCIMw5XVRveaQBuKleEsTSD4ZyXL7d/a/l8Oj2DZLUj6y6", "belamidemills29@gmail.com", "gis", "admin");
-UPDATE tbl_profiles SET first_name = 'GIS ADMIN' WHERE user_id = 3;
-
 CALL create_account("ibmadmin", NULL, "belamidemills29@gmail.com", "gis", "admin");
-UPDATE tbl_profiles SET first_name = 'IBM ADMIN' WHERE user_id = 4;
+UPDATE tbl_profiles SET first_name = 'IBM ADMIN' WHERE user_id = 2;
 
 
 
 
 
-CALL insert_message(999999999,  'sent', CAST('2025-03-06 16:02:35' AS DATETIME) - INTERVAL 5 HOUR, NULL, NULL, NULL, 1, 3, 'text', 'HELLO GIS ADMIN');
-CALL insert_message(1000000000, 'sent', CAST('2025-03-06 16:02:35' AS DATETIME) - INTERVAL 3 HOUR, NULL, NULL, NULL, 1, 2, 'text', 'HELLO JET ADMIN');
-CALL insert_message(1000000001, 'sent', CAST('2025-03-06 16:02:35' AS DATETIME) - INTERVAL 1 HOUR, NULL, NULL, NULL, 1, 4, 'text', 'HELLO IBM ADMIN');
+-- CALL insert_message(999999999,  'sent', CAST('2025-03-06 16:02:35' AS DATETIME) - INTERVAL 5 HOUR, NULL, NULL, NULL, 1, 3, 'text', 'HELLO GIS ADMIN');
+-- CALL insert_message(1000000000, 'sent', CAST('2025-03-06 16:02:35' AS DATETIME) - INTERVAL 3 HOUR, NULL, NULL, NULL, 1, 2, 'text', 'HELLO JET ADMIN');
+-- CALL insert_message(1000000001, 'sent', CAST('2025-03-06 16:02:35' AS DATETIME) - INTERVAL 1 HOUR, NULL, NULL, NULL, 1, 4, 'text', 'HELLO IBM ADMIN');
 
-CALL insert_message(1000000002, 'sent', CAST('2025-03-06 16:02:35' AS DATETIME), NULL, NULL, NULL, 1, 2, 'text', 'HELLO IBM ADMIN');
-CALL insert_message(1000000003, 'sent', CAST('2025-03-06 16:02:35' AS DATETIME), NULL, NULL, NULL, 1, 2, 'text', 'HELLO IBM ADMIN');
-CALL insert_message(1000000004, 'sent', CAST('2025-03-06 16:02:35' AS DATETIME), NULL, NULL, NULL, 1, 2, 'text', 'HELLO IBM ADMIN');
-CALL insert_message(1000000005, 'sent', CAST('2025-03-06 16:02:35' AS DATETIME), NULL, NULL, NULL, 1, 2, 'text', 'HELLO IBM ADMIN');
-CALL insert_message(1000000006, 'sent', CAST('2025-03-06 16:02:35' AS DATETIME), NULL, NULL, NULL, 1, 2, 'text', 'HELLO IBM ADMIN');
+-- CALL insert_message(1000000002, 'sent', CAST('2025-03-06 16:02:35' AS DATETIME), NULL, NULL, NULL, 1, 2, 'text', 'HELLO IBM ADMIN');
+-- CALL insert_message(1000000003, 'sent', CAST('2025-03-06 16:02:35' AS DATETIME), NULL, NULL, NULL, 1, 2, 'text', 'HELLO IBM ADMIN');
+-- CALL insert_message(1000000004, 'sent', CAST('2025-03-06 16:02:35' AS DATETIME), NULL, NULL, NULL, 1, 2, 'text', 'HELLO IBM ADMIN');
+-- CALL insert_message(1000000005, 'sent', CAST('2025-03-06 16:02:35' AS DATETIME), NULL, NULL, NULL, 1, 2, 'text', 'HELLO IBM ADMIN');
+-- CALL insert_message(1000000006, 'sent', CAST('2025-03-06 16:02:35' AS DATETIME), NULL, NULL, NULL, 1, 2, 'text', 'HELLO IBM ADMIN');
 
 
 -- CALL insert_message(1, DATE_SUB(NOW(), INTERVAL 100 YEAR), "text", "Hello there GIS admin1", 1, 3);

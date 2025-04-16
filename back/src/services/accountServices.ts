@@ -1,11 +1,10 @@
-import { createAccountDTO } from "../dto/accountController/createAccountDto";
-import { mysql, redis, sids } from "../app";
-import { generateInvitationToken, generateRefreshToken } from "../utilities/jwt";
+import { mysql } from "../app";
+import { generateInvitationToken, generateRefreshToken, verifyInvitationToken } from "../utilities/jwt";
 import { nodeMailer } from "../utilities/nodemailer";
-import { inviteToSignupDto } from "../dto/accountController/inviteToSignupDto";
+
 import { loginAccountDto } from "../dto/accountController/loginAccountDto";
 import { comparePassword, hashPassword } from "../utilities/bcrypt";
-import { IncrByCommand } from "@upstash/redis";
+
 
 
 export const loginAccountService = async (data: loginAccountDto): Promise<number | { rtk: string, role: string }> => {
@@ -41,42 +40,18 @@ export const loginAccountService = async (data: loginAccountDto): Promise<number
 }
 
 
-export const logoutAccountService = async (sid: string): Promise<number> => {
-    try {
-
-        await redis.con.del(sid);
-
-    } catch (error) {
-
-        console.log("REDIS ERROR");
-        console.log(error);
-
-        return 500;
-    }
-    
-    return 200;
-}
-
-// CREATE PROCEDURE create_account(IN in_user VARCHAR(99), IN in_password VARCHAR(99), IN in_email VARCHAR(99), IN in_company_name VARCHAR(99), IN in_role VARCHAR(99))
-
-export const createAccountService = async (data: createAccountDTO): Promise<number> => {
+export const createAccountService = async (data: any): Promise<{ message: string, status_code: number } | number> => {
 
     try {
 
-        const gmail = await redis.con.get(`db3:${data.sid}`);
-        if(gmail === null) {
-            return 401;
+        const payload = verifyInvitationToken(data.invitation);
+        if(!payload) {
+            return { message: 'Invitation expired', status_code: 401 };
         }
 
-        const jsonAccountInfo = await redis.con.get(gmail);
-        if(jsonAccountInfo === null) {
-            return 401;
-        }
-
-        const accountInfo = JSON.parse(jsonAccountInfo) as { role: string, email: string, company: string };
         const hashedPassword = await hashPassword(data.password);
-        await mysql.promise().query("CALL create_account(?, ?, ?, ?, ?)", [data.username, hashedPassword, accountInfo.email, accountInfo.company, accountInfo.role]);
-        return 200;
+        const [[[result]]] = await mysql.promise().query("CALL create_account(?, ?, ?, ?, ?)", [data.username, hashedPassword, payload.email, payload.company, payload.role]) as any;
+        return result;
 
     } catch (error) {
 
@@ -85,29 +60,41 @@ export const createAccountService = async (data: createAccountDTO): Promise<numb
     }
 }
 
-export const inviteToSignupService = async (data: { gmail: string, domain: string, role: string }): Promise<number> => {
-
-    const domains = {
-        'http://localhost:3000': 'ibc',
-        'http://localhost:4200': 'ibc'
-    };
-
-    const invitationKey = generateInvitationToken(data.gmail, domains[data.domain as keyof typeof domains], data.role);
-    const url = `http://localhost:3000/invite?invitation=${invitationKey}`;
+export const InviteToSignupService = async (Data: { Gmail: string, Company: string, Role: string }): Promise<number> => {
+    const SecondsBasedDuration = 3600;
+    const InvitationKey = generateInvitationToken(Data.Gmail, Data.Company, Data.Role, SecondsBasedDuration);
+    const Url = `http://localhost:4200/signup?invitation=${InvitationKey}`;
 
     try {
 
-        await redis.con.del('db2:' + data.gmail);
-        const sent = await nodeMailer(data.gmail, url);
-        
-        if(!sent) {
+        const IsSent = await nodeMailer(Data.Gmail, Url, SecondsBasedDuration);
+        if(!IsSent) {
             return 403;
         }
-        
+        return 200;    
+
+    } catch (Error) {
+
+        console.log(Error);
+        return 500;
+    }
+}
+
+export const getListOfAccounts = async (company: string): Promise<any> => {
+    try {
+
+        const [ListOfAccounts] = await mysql.promise().query(`
+            SELECT prof.first_name, prof.email, prof.phone, role.company_name
+            FROM tbl_roles AS role
+            JOIN tbl_profiles AS prof 
+                ON role.user_id = prof.user_id
+            WHERE role.company_name = ? AND role.role = ?`, [company, 'account']);
+
+        return ListOfAccounts;
+
     } catch (error) {
 
-        return 400;
+        console.log(error);
+        return 500;
     }
-
-    return 200;
 }

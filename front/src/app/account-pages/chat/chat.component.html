@@ -1,196 +1,124 @@
-  <div class="flex">
-    <app-a-sidebar></app-a-sidebar>
-    <app-chat-widget></app-chat-widget>
-    <!-- Main Container -->
-    <div class="flex h-[95vh] container bg-secondary gap-4 my-auto mx-auto p-4">
-      <!-- Inbox Sidebar -->
-      <div class="flex flex-col w-64 bg-white ring-1 ring-primary rounded-lg shadow-lg">
-        <app-active-users></app-active-users>
-        <div class="w-64 bg-whites p-4 rounded-lg space-y-6">
-          <h3 class="text-primary font-semibold bg-accent text-center text-xl py-2 rounded-lg">
-            Inbox
-          </h3>
-          <div  (click)="showComposeModal()" class=" ring-1 ring-accent flex justify-evenly cursor-pointer text-primary py-2 px-3 rounded-lg hover:bg-accent transition duration-200 ease-in-out">
-            <span>Create a message</span>
-            <svg class="w-5 h-5" viewBox="0 0 24 24" id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg"><defs><style>.cls-1{fill:none;stroke:#020202;stroke-miterlimit:10;stroke-width:1.91px;}</style></defs><line class="cls-1" x1="8.18" y1="10.07" x2="15.82" y2="10.07"/><line class="cls-1" x1="12" y1="6.25" x2="12" y2="13.89"/><path class="cls-1" d="M1.5,5.3v9.54a3.82,3.82,0,0,0,3.82,3.82H7.23v2.86L13,18.66h5.73a3.82,3.82,0,0,0,3.82-3.82V5.3a3.82,3.82,0,0,0-3.82-3.82H5.32A3.82,3.82,0,0,0,1.5,5.3Z"/></svg> 
-          </div>
-    
-          <!-- Categories -->
-          <ul class="w-56 flex justify-between items-center">
-            <li
-              *ngFor="let category of ['all', 'assigned']"
-              (click)="changeCategory(category)"
-              [class.bg-red-300]="selectedCategory === category"
-              class="cursor-pointer ring-1 ring-accent  text-center text-primary w-[45%] py-2 px-3 rounded-lg hover:bg-accent transition duration-200 ease-in-out"
-            >
-              {{ category | titlecase }}
-              <span *ngIf="category === 'all'" class="ml-2 text-sm font-semibold text-primary">({{ messages.length }})</span>
-            </li>
-          </ul>
-          <!-- Search -->
-          <div class="mt-4">
-            <input
-              type="text"
-              class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="&#x1F50E; Search contacts..."
-            />
-          </div>
-    
-          <!-- Conversations List -->
-          <ul class="space-y-3 overflow-y-auto  overflow-x-hidden h-[40vh]">
-            <li
-              *ngFor="let message of messages"
-              (click)="selectedChat = message"
-              class="cursor-pointer p-3 bg-gray-100 hover:bg-gray-200 rounded-lg transition duration-200 ease-in-out"
-            >
-              <div class="flex justify-between items-center mb-1">
-                <span class="text-primary font-semibold">{{ message.sender }}</span>
-                <span class="text-xs text-gray-500">{{ message.time }}</span>
-              </div>
-              <p class="text-sm text-gray-600 truncate">{{ message.message }}</p>
-    
-              <!-- Status & Priority Indicators -->
-              <div class="text-xs text-gray-500 mt-2">
-                <span *ngIf="message.priority" class="text-red-500 font-semibold">Priority</span>
-                <span *ngIf="message.status === 'open'" class="text-green-500 ml-2">Open</span>
-                <span *ngIf="message.status === 'pending'" class="text-yellow-500 ml-2">Pending</span>
-                <span *ngIf="message.status === 'closed'" class="text-gray-500 ml-2">Closed</span>
-              </div>
-            </li>
-          </ul>
-        </div>
-      </div>
-  
-      <!-- Chat Window -->
-      <div class="flex flex-col flex-1 h-full bg-whites ring-1 ring-primary p-4 rounded-lg shadow-2xl">
-        <!-- Chat Header -->
-        <div class="flex items-center justify-between p-3 text-primary rounded-lg shadow-md bg-gray-100">
-          <h2 class="font-semibold text-lg">
-            {{ selectedChat?.sender || 'Select a Conversation' }}
-            <!-- Priority and Status Indicators -->
-            <span *ngIf="selectedChat?.priority" class="text-red-500 text-sm ml-2 font-semibold">Priority</span>
-            <span *ngIf="selectedChat?.status === 'open'" class="text-green-500 text-sm ml-2">Open</span>
-            <span *ngIf="selectedChat?.status === 'pending'" class="text-yellow-500 text-sm ml-2">Pending</span>
-            <span *ngIf="selectedChat?.status === 'closed'" class="text-gray-500 text-sm ml-2">Closed</span>
-          </h2>
-          <div class="relative">
-              <button title="button" (click)="toggleOptions()" class="bg-gray-200 text-primary py-2 px-4 rounded-lg hover:bg-gray-300 transition duration-200">
-                <svg class="w-5 h-5" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-                  <path fill="var(--ci-primary-color, #000000)" d="M256,144a64,64,0,1,0-64-64A64.072,64.072,0,0,0,256,144Zm0-96a32,32,0,1,1-32,32A32.036,32.036,0,0,1,256,48Z" class="ci-primary"/>
-                  <path fill="var(--ci-primary-color, #000000)" d="M256,368a64,64,0,1,0,64,64A64.072,64.072,0,0,0,256,368Zm0,96a32,32,0,1,1,32-32A32.036,32.036,0,0,1,256,464Z" class="ci-primary"/>
-                  <path fill="var(--ci-primary-color, #000000)" d="M256,192a64,64,0,1,0,64,64A64.072,64.072,0,0,0,256,192Zm0,96a32,32,0,1,1,32-32A32.036,32.036,0,0,1,256,288Z" class="ci-primary"/>
-                </svg>
-              </button>
-              <div *ngIf="showOptions" class="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg">
-              <ul class="py-1">
-                <li (click)="addNotes()" class="px-4 py-2 hover:bg-gray-100 cursor-pointer">Add notes</li>
-                <li (click)="viewTranscript()" class="px-4 py-2 hover:bg-gray-100 cursor-pointer">View transcript</li>
-                <li (click)="deleteMessage()" class="px-4 py-2 hover:bg-gray-100 cursor-pointer">Delete message</li>
-              </ul>
-              </div>
-          </div>
-        </div>
-  
-       <!-- Chat Messages -->
-  <div class="flex-1 overflow-y-auto p-4 space-y-4">
-    <div *ngIf="selectedChat" class="w-full">
-      <div class="flex gap-2" [ngClass]="selectedChat.type === 'sent' ? 'justify-end' : 'justify-start'">
-        <!-- Sent Message -->
-        <div *ngIf="selectedChat.type === 'sent'" class="bg-accent text-white p-3 rounded-lg max-w-[75%] shadow-md">
-          <p class="text-sm font-semibold">{{ selectedChat.message }}</p>
-          <span class="text-xs text-gray-300 flex justify-end">{{ selectedChat.time }}</span><br>
-          <span *ngIf="selectedChat.priority" class="text-xs text-red-500">Priority</span>
-        </div>
-        <!-- Received Message -->
-        <div *ngIf="selectedChat.type === 'received'" class="bg-gray-300 text-black p-3 rounded-lg max-w-[75%] shadow-md">
-          <p class="text-sm font-semibold">{{ selectedChat.message }}</p>
-          <span class="text-xs text-gray-500">{{ selectedChat.time }}</span><br>
-          <span *ngIf="selectedChat.priority" class="text-xs text-red-500">Priority</span>
-          <span *ngIf="selectedChat.status === 'closed'" class="text-xs text-gray-500">Closed</span>
-          <span *ngIf="selectedChat.status === 'pending'" class="text-xs text-yellow-500">Pending</span>
-          <span *ngIf="selectedChat.status === 'open'" class="text-xs text-green-500">Open</span>
-        </div>
-      </div>
-    </div>
-  </div>
+<div class="flex bg-secondary max-h-screen">
 
-  
-  
-        <!-- Message Input -->
-        <div class="flex items-center gap-2 border-t pt-4">
-          <input
-            type="text"
-            [(ngModel)]="newMessage"
-            class="flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="Type a message..."
-          />
-          <button title="attachment"
-          (click)="sendAttachment()"
-          class="bg-gray-400 text-white py-2 px-4 rounded-lg hover:bg-accent transition duration-200"
-        >
-        <svg class="w-5 h-5" viewBox="-8 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+  <!-- Side bar -->
+  <app-a-sidebar></app-a-sidebar>
+
+  <main class="flex flex-row flex-grow py-20 px-40 gap-5">
+
+    <!-- Aside -->
+    <aside class="h-full min-w-80 max-w-80 rounded-lg border border-black shadow-2xl px-4 pt-4 gap-5 mb-5 relative flex flex-col pb-5">
+
+      <!-- Search input -->
+      <input class="h-14 rounded-lg px-3 ring-1 ring-gray-300 outline-none text-lg" type="text" placeholder="Search...">
+
+      <!-- Actives -->
+      <header class="flex flex-row items-center max-h-20">
+        <button class="w-5 h-7 bg-accent rounded-full flex items-center justify-center text-white text-[13px] select-none" onclick="this.nextElementSibling.scrollBy({ left: -100, behavior: 'smooth' })"><</button>
+        <ul class="flex flex-row overflow-x-hidden overflow-y-hidden rounded-lg min-h-24 pt-2 gap-2 scroll-w px-2">
+          <li *ngFor="let ActiveUser of Data.Chat.ActiveUserOfThisCompany" class="flex min-h-20 max-h-20 min-w-20 max-w-20 flex-col cursor-pointer hover:bg-gray-200 bg-opacity-0 rounded-xl transition duration-200 items-center justify-center shadow-md">
+            <div *ngIf="ActiveUser" class="h-[43px] w-[43px] bg-accent text-white rounded-full flex justify-center items-center pointer-events-none select-none relative">
+              <span>{{ ActiveUser !== undefined && ActiveUser.name !== undefined ? ActiveUser.name[0].toUpperCase() : 'Error' }}</span>
+              <span class="absolute text-green-600 text-5xl mt-6 ml-8">•</span>
+            </div>            
+            <p *ngIf="ActiveUser" class="text-xs text-primary max-w-16 pointer-events-none select-none overflow-hidden whitespace-nowrap text-ellipsis">{{ ActiveUser.name ? ActiveUser.name : 'Error' }}</p> 
+          </li>
+        </ul>
+        <button class="w-5 h-7 bg-accent rounded-full flex items-center justify-center text-white text-[13px] select-none" onclick="this.previousElementSibling.scrollBy({ left: 100, behavior: 'smooth' })">></button>
+      </header>
       
-          <title>attachment</title>
-          <desc>Created with Sketch Beta.</desc>
-          <defs>
+      <!-- Inbox -->
+      <input class="h-14 w-full bg-accent rounded-lg text-white text-3xl text-center border-l cursor-pointer outline-none font-thin scroll-w" value="Inbox" type="text">
+
+      <!-- Chatmate -->
+      <ul class="w-full flex flex-col flex-grow border-y border-gray-300 px-1 overflow-y-scroll py-3 pr-3 gap-2 scroll-h">
+        <li *ngFor="let Chatmate of ['timoy', 'bensoy', 'helsi', 'charles', 'ashe', 'hitler', 'tote']" class="max-h-20 min-h-20 pt p-2 flex items-end rounded-lg hover:bg-gray-100 gap-2 cursor-pointer shadow">
+          <div class="h-14 w-14 bg-accent flex justify-center items-center rounded-full text-white">{{ Chatmate[0].toUpperCase() }}</div>
+          <label class="h-full flex flex-col items-start gap-2">
+            <h1 class="text-lg">{{ Chatmate }}</h1>
+            <p class="text-sm text-gray-600">Hello World!</p>
+          </label>
+        </li>
+      </ul>
+
+    </aside>
+
+    <aside class="flex flex-grow flex-col rounded-lg border border-black shadow-2xl p-3 gap-3">
+
+      <header *ngIf="!Data.Chat.CurrentChatmate" class="h-full flex items-center justify-center">
+        <h1 class="text-3xl font-extralight text-gray-500 select-none">No chatmate selected</h1>
+      </header>
       
-      </defs>
-          <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
-              <g id="Icon-Set" sketch:type="MSLayerGroup" transform="translate(-212.000000, -151.000000)" fill="#000000">
-                  <path d="M226,155 L226,175 C226,178.313 223.313,181 220,181 C216.687,181 214,178.313 214,175 L214,157 C214,154.791 215.791,153 218,153 C220.209,153 222,154.791 222,157 L222,175 C222,176.104 221.104,177 220,177 C218.896,177 218,176.104 218,175 L218,159 L216,159 L216,175 C216,177.209 217.791,179 220,179 C222.209,179 224,177.209 224,175 L224,157 C224,153.687 221.313,151 218,151 C214.687,151 212,153.687 212,157 L212,176 C212.493,179.945 215.921,183 220,183 C224.079,183 227.507,179.945 228,176 L228,155 L226,155" id="attachment" sketch:type="MSShapeGroup">
-      
-      </path>
-              </g>
-          </g>
-      </svg>
-        </button>
-          <button
-            (click)="sendMessage()"
-            class="bg-accent text-white py-2 px-4 rounded-lg hover:bg-primary transition duration-200"
-          >
-            Send
-          </button>
-     
+      <!-- Header -->
+      <header *ngIf="Data.Chat.CurrentChatmate" class="flex flex-col select-none">
+        <label class="flex-grow flex items-end max-h-20 bg-gray-100 rounded-lg shadow-lg px-5 py-2 justify-between">
+          <aside class="flex flex-row items-center gap-2">
+            <div class="bg-accent w-14 h-14 rounded-full flex text-white text-3xl items-center justify-center font-thin">T</div>
+            <span class="flex items-end rounded-lg text-2xl text-gray-500">Timoy</span>
+          </aside>
+          <button class="w-16 h-12 bg-accent rounded-lg text-center text-white text-2xl cursor-pointer outline-none mb-1">•••</button>
+        </label>
+        <main>
+        </main>
+      </header>
+
+      <!-- Body -->
+      <main *ngIf="Data.Chat.CurrentChatmate" class="h-full flex-grow overflow-y-auto border-y border-gray-300 scroll-h">
+        <ul class="flex flex-grow flex-col scrollbar-track-transparent px-5">
+          <li>HELLO WORLD!</li>
+          <li>HELLO WORLD!</li>
+          <li>HELLO WORLD!</li>
+          <li>HELLO WORLD!</li>
+          <li>HELLO WORLD!</li>
+          <li>HELLO WORLD!</li>
+          <li>HELLO WORLD!</li>
+          <li>HELLO WORLD!</li>
+          <li>HELLO WORLD!</li>
+          <li>HELLO WORLD!</li>
+          <li>HELLO WORLD!</li>
+          <li>HELLO WORLD!</li>
+          <li>HELLO WORLD!</li>
+          <li>HELLO WORLD!</li>
+          <li>HELLO WORLD!</li>
+          <li>HELLO WORLD!</li>
+          <li>HELLO WORLD!</li>
+          <li>HELLO WORLD!</li>
+          <li>HELLO WORLD!</li>
+          <li>HELLO WORLD!</li>
+          <li>HELLO WORLD!</li>
+          <li>HELLO WORLD!</li>
+          <li>HELLO WORLD!</li>
+          <li>HELLO WORLD!</li>
+          <li>HELLO WORLD!</li>
+          <li>HELLO WORLD!</li>
+          <li>HELLO WORLD!</li>
+          <li>HELLO WORLD!</li>
+          <li>HELLO WORLD!</li>
+          <li>HELLO WORLD!</li>
+          <li>HELLO WORLD!</li>
+          <li>HELLO WORLD!</li>
+          <li>HELLO WORLD!</li>
+          <li>HELLO WORLD!</li>
+          <li>HELLO WORLD!</li>
+          <li>HELLO WORLD!</li>
+        </ul>
+      </main>
+
+      <!-- Form -->
+      <form *ngIf="Data.Chat.CurrentChatmate" class="flex flex-row items-end border-gray-300 gap-3 select-none">
+        <textarea *ngIf="!Data.Chat.CurrentAttachedFile" [(ngModel)]="Data.Chat.CurrentInputtedMessage" cols="1" class="resize-none outline-none flex-grow border border-gray-300 rounded-lg overflow-y-scroll text-lg py-1 px-5 max-h-96 scroll-h" oninput="this.style.height = '';  this.style.height = this.scrollHeight + 2 + 'px';"></textarea>
+        <div *ngIf="Data.Chat.CurrentAttachedFile && !Data.Chat.CurrentInputtedMessage" class="flex justify-center outline-none flex-grow border border-gray-300 rounded-lg min-h-[62px] max-h-96 p-3 relative">
+          <span class="absolute top-0 right-0 text-2xl mr-3 text-gray-400 cursor-pointer hover:text-gray-700 transition-all" (click)="Data.Chat.CurrentAttachedFile = null">×</span>
+          <img class="object-contain aspect-square" [src]="Data.Chat.CurrentAttachedFile" alt="Preview"/>
         </div>
-      </div>
-    </div>
+        <label *ngIf="!Data.Chat.CurrentInputtedMessage" class="min-w-16 h-16 bg-accent text-white rounded-lg cursor-pointer flex items-center justify-center text-3xl">
+          <span>#</span>
+          <input type="file" class="hidden" (change)="Modifier.AttachFile($event)" />
+        </label>
+        <input type="submit" class="min-w-40 h-16 bg-accent text-white text-lg rounded-lg cursor-pointer" type="submit" value="Send">
+      </form>
+
+    </aside>
+
+  </main>
+
 </div>
-
-         <!-- Compose Message Modal -->
-         <div *ngIf="composeModal" (click)="showComposeModal()" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div class="bg-white p-6 rounded-lg shadow-lg w-1/3">
-            <h2 class="text-xl font-semibold mb-4">Compose Message</h2>
-            <div class="mb-4">
-              <label class="block text-sm font-medium text-gray-700">Recipient</label>
-              <input title="sad" type="text" class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" />
-            </div>
-            <div class="mb-4">
-              <label class="block text-sm font-medium text-gray-700">Message</label>
-              <textarea title="asd" class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
-            </div>
-            <div class="flex justify-end gap-2">
-              <button (click)="closeComposeModal()" class="bg-gray-200 text-primary py-2 px-4 rounded-lg hover:bg-gray-300 transition duration-200">Cancel</button>
-              <button (click)="sendComposeMessage()" class="bg-accent text-white py-2 px-4 rounded-lg hover:bg-primary transition duration-200">Send</button>
-            </div>
-          </div>
-        </div>
-  
-        <!-- Attachment Modal -->
-        <div *ngIf="attachmentModal" (click)="sendAttachment()" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div class="bg-white p-6 rounded-lg shadow-lg w-2/3">
-            <h2 class="text-xl font-semibold mb-4">Attach Files</h2>
-            <div class="mb-4">
-              <label class="block text-sm font-medium text-gray-700">Upload Files</label>
-              <input title="asd" type="file" multiple class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" />
-            </div>
-            <div class="mb-4">
-              <label class="block text-sm font-medium text-gray-700">Selected Files</label>
-  
-  
-            </div>
-            <div class="flex justify-end gap-2">
-              <button (click)="sendAttachment()" class="bg-gray-200 text-primary py-2 px-4 rounded-lg hover:bg-gray-300 transition duration-200">Cancel</button>
-              <button (click)="uploadFiles()" class="bg-accent text-white py-2 px-4 rounded-lg hover:bg-primary transition duration-200">Upload</button>
-            </div>
-          </div>
-        </div>

@@ -3,7 +3,6 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const transporter = nodemailer.createTransport({
-    
     service: 'gmail',
     auth: {
         user: process.env.GOOGLE_APP_EMAIL,
@@ -11,8 +10,8 @@ const transporter = nodemailer.createTransport({
     },
 });
 
-const expiry = () => {
-    const timestamp = Date.now() + (1000 * 60 * 60);
+const expiry = (duration: number) => {
+    const timestamp = Date.now() + (duration * 1000);
     const date = new Date(timestamp);
     
     let hours = date.getHours();
@@ -27,7 +26,7 @@ const expiry = () => {
     return `${hours}:${minutes} AM`;
 }
 
-export const nodeMailer = async (email: string, url: string): Promise<boolean> => {
+export const nodeMailer = async (email: string, url: string, duration: number): Promise<boolean> => {
 
     try {
 
@@ -39,7 +38,7 @@ export const nodeMailer = async (email: string, url: string): Promise<boolean> =
             html: `
               <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px;">
                 <p style="font-size: 16px;">You are invited to join the Chat-App, please click the button below to fill in your details.</p>
-                <p style="font-size: 14px; color: green;">Note: This will be available until ${expiry()}</p>
+                <p style="font-size: 14px; color: green;">Note: This will be available until ${expiry(duration)}</p>
                 <button style="background-color: #007BFF; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
                   <a href="${url}" style="text-decoration: none; color: white; font-size: 16px;">Fill In Information</a>
                 </button>

@@ -2,6 +2,7 @@
 class="bg-[url('assets/images/cars.jpg')] backdrop-grayscale bg-center bg-cover flex items-center justify-center min-h-screen"
 >
 <div class="h-screen w-full absolute bg-[#181818] bg-opacity-90 z-0"></div>
+
 <div
   class="z-10 border bg-[#181818] rounded-lg max-w-4xl w-full grid grid-cols-1 md:grid-cols-2"
 >
@@ -23,8 +24,8 @@ class="bg-[url('assets/images/cars.jpg')] backdrop-grayscale bg-center bg-cover 
       Login
     </h2>
     <form (ngSubmit)="login()" class="space-y-6">
-      <div *ngIf="errorMessage" class="text-red-600 text-center mb-4">
-        <p>{{ errorMessage }}</p>
+      <div *ngIf="message" class="text-red-600 text-center mb-4">
+        <p>{{ message }}</p>
       </div>
       <div>
         <label
@@ -78,10 +79,7 @@ class="bg-[url('assets/images/cars.jpg')] backdrop-grayscale bg-center bg-cover 
       </div>
     </form>
 
-    <p class="mt-4 text-sm text-center text-gray-600">
-      Don't have an account?
-      <a href="#" class="text-red-600">Sign up</a>
-    </p>
+    <p class="mt-4 text-sm text-center text-gray-600"></p>
   </div>
 </div>
 

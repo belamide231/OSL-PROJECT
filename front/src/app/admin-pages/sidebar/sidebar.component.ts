@@ -2,9 +2,9 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { Router } from '@angular/router';
-import { OnInit } from '@angular/core';
-import { ApiService } from '../../services/services.configuration/api.service';
-import { DataService } from '../../services/data.service';
+import { ApiService } from '../../services/api.service';
+import { SocketService } from '../../services/socket.service';
+import { AccessService } from '../../services/access.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -14,55 +14,34 @@ import { DataService } from '../../services/data.service';
   styleUrl: './sidebar.component.css'
 })
 
-export class SidebarComponent implements OnInit {
+export class SidebarComponent {
   isCollapsed: boolean;
 
-  constructor(private router: Router, private readonly api: ApiService, public readonly data: DataService) {
-    // Retrieve the saved sidebar state from local storage on initialization
+  constructor(
+    private readonly api: ApiService,
+    private readonly router: Router,
+    private readonly socket: SocketService,
+    private readonly access: AccessService
+  ) {
     const savedState = localStorage.getItem('sidebarState');
     this.isCollapsed = savedState ? JSON.parse(savedState) : false;
   }
 
-  ngOnInit(): void {
-    //// Optionally, you can listen to route changes to handle other side effects.
-    //this.router.events.subscribe(() => {
-    //  // Keep the sidebar state intact across route changes
-    //});
-    
-    //// const themeColors = localStorage.getItem('themeColors');
-    //// if (themeColors) {
-    ////   const colors = JSON.parse(themeColors);
-    ////   document.documentElement.style.setProperty('--primary-color', colors.primary);
-    ////   document.documentElement.style.setProperty('--secondary-color', colors.secondary);
-    ////   document.documentElement.style.setProperty('--accent-color', colors.accent);
-    //// }
-
-    //this.api.theme().subscribe((res: any) => {
-    //  if(isFinite(res)) 
-    //    return;
-
-    //  document.documentElement.style.setProperty('--primary-color', res.primary_color);
-    //  document.documentElement.style.setProperty('--secondary-color', res.secondary_color);
-    //  document.documentElement.style.setProperty('--accent-color', res.accent_color);
-    //  document.documentElement.style.setProperty('--whites-color', res.whites_color);
-    //});
-    
+  toggleSidebar(): void {
+    this.isCollapsed = !this.isCollapsed;
+    localStorage.setItem('sidebarState', JSON.stringify(this.isCollapsed));
   }
 
   logout(): void {
-    // Clear the login state from localStorage
-    // localStorage.removeItem('isLoggedIn');
-    // Redirect to login page
-    // this.router.navigate(['/login']);
-
-    this.api.logout().subscribe(res => res ? alert(res) : this.router.navigate(['/login']));
-    console.log("UBOS");
-  }
-
-  toggleSidebar(): void {
-    this.isCollapsed = !this.isCollapsed;
-    // Save the updated state to local storage
-    localStorage.setItem('sidebarState', JSON.stringify(this.isCollapsed));
+    this.api.userLogout().subscribe((response): any => {
+      if(response.status !== 200) {
+        return alert('Connection error');
+      };
+      this.router.navigate(['/login']);
+      this.access.ChangeAuthentication(false);
+      this.access.ChangeAuthorization(false);
+      this.socket.Disconnect();
+    });
   }
 }
 

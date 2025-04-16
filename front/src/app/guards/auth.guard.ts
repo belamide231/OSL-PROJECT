@@ -1,25 +1,24 @@
-import { CanActivateFn, Router } from '@angular/router';
-import { inject } from '@angular/core';
+import { Injectable } from "@angular/core";
+import { CanActivate, Router } from "@angular/router";
+import { GuardApiService } from "../services/guard.api.service";
+import { firstValueFrom } from "rxjs";
 
-// Define the authGuard function
-export const authGuard: CanActivateFn = () => {
-  const isLoggedIn = localStorage.getItem('isLoggedIn');
-  const userRole = localStorage.getItem('role'); // Assuming role is stored in localStorage
+@Injectable({ providedIn: 'root' })
+export class HasKeyGuard implements CanActivate {
+  constructor(
+    private api: GuardApiService,
+    private router: Router) {}
 
-  const router = inject(Router);
-
-  if (isLoggedIn === 'true') {
-    if (userRole === 'admin') {
-      return true; // Allow admin to access admin routes
-    } else if (userRole === 'user') {
-      router.navigate(['/agent-dashboard']); // Redirect users to agent dashboard
-      return false;
-    } else {
-      router.navigate(['/login']); // Redirect if no valid role found
-      return false;
+  async canActivate(): Promise<boolean> {
+    const response = await firstValueFrom<any>(this.api.HasKey());
+    if(response.status !== 200) {
+        this.router.navigate([({
+            admin: '',
+            account: '/adashboard'
+        } as any)[response.error.role]]);
+        return false;
     }
-  } else {
-    router.navigate(['/login']); // Redirect if not logged in
-    return false;
+
+    return true;
   }
-};
+}

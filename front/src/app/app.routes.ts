@@ -14,23 +14,28 @@ import { AgentNotificationsComponent } from './account-pages/agent-notifications
 import { AgentSettingsComponent } from './account-pages/agent-settings/agent-settings.component';
 import { AgentContactsComponent } from './account-pages/agent-contacts/agent-contacts.component';
 import { SignUpComponent } from './admin-pages/sign-up/sign-up.component';
+import { InvitationGuard } from './guards/invitation.guard';
+import { AuthenticationGuard } from './guards/authentication.guard';
+import { AuthorizationGuard } from './guards/authorization.guard';
+import { HasKeyGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
-    { path: '',                     component: DashboardComponent },
-    { path: 'chat',                 component: AdminChat },
-    { path: 'users',                component: UsersComponent },
-    { path: 'notifications',        component: NotificationsComponent },
-    { path: 'settings',             component: SettingsComponent },
-    { path: 'profile',              component: ProfileComponent },
-    { path: 'usermanage',           component: UserManageComponent },
-    { path: 'user-invite',          component: UserInvitationComponent },
-    { path: 'login',                component: LoginComponent },
-    { path: 'achat',                component: AccountChat },
-    { path: 'adashboard',           component: AgentDashboardComponent },
-    { path: 'anotifications',       component: AgentNotificationsComponent  },
-    { path: 'asettings',            component: AgentSettingsComponent},
-    { path: 'acontacts',            component: AgentContactsComponent},
-    { path: 'sign-up',              component: SignUpComponent },
-    { path: '**', redirectTo: '' }
-];
+    { path: '',                     component: DashboardComponent,             canActivate: [AuthenticationGuard, AuthorizationGuard],   data: { RequiredRole: 'admin' }},
+    { path: 'chat',                 component: AdminChat,                      canActivate: [AuthenticationGuard, AuthorizationGuard],   data: { RequiredRole: 'admin' }},
+    { path: 'users',                component: UsersComponent,                 canActivate: [AuthenticationGuard, AuthorizationGuard],   data: { RequiredRole: 'admin' }},
+    { path: 'notifications',        component: NotificationsComponent,         canActivate: [AuthenticationGuard, AuthorizationGuard],   data: { RequiredRole: 'admin' }},
+    { path: 'settings',             component: SettingsComponent,              canActivate: [AuthenticationGuard, AuthorizationGuard],   data: { RequiredRole: 'admin' }},
+    { path: 'profile',              component: ProfileComponent,               canActivate: [AuthenticationGuard, AuthorizationGuard],   data: { RequiredRole: 'admin' }},
+    { path: 'usermanage',           component: UserManageComponent,            canActivate: [AuthenticationGuard, AuthorizationGuard],   data: { RequiredRole: 'admin' }},
+    { path: 'user-invite',          component: UserInvitationComponent,        canActivate: [AuthenticationGuard, AuthorizationGuard],   data: { RequiredRole: 'admin' }},
+    { path: 'login',                component: LoginComponent,                 canActivate: [HasKeyGuard]},
 
+    { path: 'achat',                component: AccountChat,                    canActivate: [AuthenticationGuard, AuthorizationGuard],   data: { RequiredRole: 'account' }},
+    { path: 'adashboard',           component: AgentDashboardComponent,        canActivate: [AuthenticationGuard, AuthorizationGuard],   data: { RequiredRole: 'account' }},
+    { path: 'anotifications',       component: AgentNotificationsComponent,    canActivate: [AuthenticationGuard, AuthorizationGuard],   data: { RequiredRole: 'account' }},
+    { path: 'asettings',            component: AgentSettingsComponent,         canActivate: [AuthenticationGuard, AuthorizationGuard],   data: { RequiredRole: 'account' }},
+    { path: 'acontacts',            component: AgentContactsComponent,         canActivate: [AuthenticationGuard, AuthorizationGuard],   data: { RequiredRole: 'account' }},
+
+    { path: 'signup',               component: SignUpComponent,                canActivate: [HasKeyGuard, InvitationGuard]},
+    { path: '**', redirectTo: 'login'}
+];

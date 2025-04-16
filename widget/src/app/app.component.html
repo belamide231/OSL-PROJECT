@@ -1,10 +1,6 @@
-<div class="flex items-end justify-end h-[100vh] bg-gray-900">
-
-  <main *ngIf="['home', 'chat'].includes(page)" class="h-96 w-72 mr-7 mb-7">
-
-    <app-home *ngIf="page === 'home' "></app-home>
-    <app-chat *ngIf="page === 'chat' "></app-chat>
-
+<div class="flex items-end justify-end h-[100vh] bg-gray-900 p-5">
+  <main *ngIf="Data.Page !== null">
+    <app-home *ngIf="Data.Page === 'Home' "></app-home>
+    <app-chat *ngIf="Data.Page === 'Chat' "></app-chat>
   </main>
-
 </div>

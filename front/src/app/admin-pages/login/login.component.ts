@@ -1,10 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { ApiService } from '../../services/services.configuration/api.service';
-import { SocketService } from '../../services/services.configuration/socket.service';
-
+import { ApiService } from '../../services/api.service';
 
 @Component({
   selector: 'app-login',
@@ -13,26 +11,25 @@ import { SocketService } from '../../services/services.configuration/socket.serv
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css'],
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent {
+  message: string = '';
   username: string = '';
   password: string = '';
-  errorMessage: string = '';
 
-  constructor(private router: Router, private readonly api: ApiService, private readonly socket: SocketService) {}
+  constructor(
+    private readonly api: ApiService,
+    private readonly router: Router) {}
 
-  ngOnInit(): void {
-  }
-
-  login = () => {
-
-    this.api.login(this.username, this.password).subscribe((response: string) => {
-      if(!['admin', 'account'].includes(response)) {
-        this.errorMessage = response;
+  public login(): void {
+    this.api.userLogin(this.username, this.password).subscribe((response): any => {
+      if(response.status !== 200) {
+        return this.message = 'Invalid username or password';
       }
-      this.router.navigate([{
-        admin: '/dashboard',
-        account: '/adashboard'
-      }[response]]);
+      const body = JSON.parse(response.body);
+      this.router.navigate([({  
+        'admin': '/',
+        'account': '/adashboard'
+      } as any)[body.role]]);
     });
   }
 }

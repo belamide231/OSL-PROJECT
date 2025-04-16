@@ -1,48 +1,34 @@
+import { TransferPreservedData } from '../services/messageServices';
 import { Queue, Worker } from 'bullmq';
-import { migrateCachedMessages } from '../services/messageServices';
 import dotenv from 'dotenv';
 dotenv.config();
 
 
-const connection = {
+const Connection = {
     connection: { 
         url: process.env.CLOUD_BASE ? process.env.REDIS_URL as string : 'redis://localhost:6379/0'
     }
 };
 
+const Queues = new Queue('chat_preservation_timer', Connection);
 
-const queue = new Queue('chats', connection);
 
+export async function ChatPreservationTimer(ChatId: string, ChatType: string): Promise<void> {
+    const JobId = `chat_id:${ChatId}`;
+    const ActivatedJob = await Queues.getJob(JobId);
 
-export const setCachedTimer = async (data: { chatKey: string, users: number[] }) => {
-    const existing = await queue.getJob(data.chatKey);
-
-    if(existing) {
-        await existing.remove();
+    if(ActivatedJob) {
+        await ActivatedJob.remove();
     }
 
-    await queue.add('chat', { 
-        data 
+    await Queues.add('chat_information', {
+        ChatId,
+        ChatType
     }, {
-        delay: 1000 * 60 * 60,
-        jobId: data.chatKey
+        delay: 1000*5,
+        jobId: JobId 
     });
 }
 
 
-new Worker('chats', async (job) => {
-    await migrateCachedMessages(job.data.data);
-}, connection);
-
-
-// Ang gi cached nga client info.
-export const setCachedClientInfoTimer = async (sid: string) => {
-    const existing = await queue.getJob(sid);
-
-    if(existing) {
-        await existing.remove();
-    }
-
-    const key = `users:clients:${sid}`;
-    await queue.add(key, sid, { jobId: sid, delay: 1000 * 60 * 60 });
-}
+new Worker('chat_preservation_timer', async (Job): Promise<void> => await TransferPreservedData(Job.data.ChatId, Job.data.ChatType), Connection);

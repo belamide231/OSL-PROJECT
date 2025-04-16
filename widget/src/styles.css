@@ -1,5 +1,16 @@
-/* You can add global styles to this file, and also import other style files */
 /* src/styles.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.scroll-button-transparent::-webkit-scrollbar {
+  width: 8px;
+}
+.scroll-button-transparent::-webkit-scrollbar-button {
+  height: 5px;
+}
+.scroll-button-transparent::-webkit-scrollbar-thumb {
+  width: 8px;
+  border-radius: 8px;
+  background-color: grey;
+}

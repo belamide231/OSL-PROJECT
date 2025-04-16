@@ -24,8 +24,9 @@ export class getRedisConnection {
     constructor() {
 
         let url = 'redis://localhost:6379/0';
-        if(process.env.CLOUD_BASE)
+        if(process.env.CLOUD_BASE) {
             url = process.env.REDIS_URL as string;
+        }
 
         this.con = createClient({ url });
         this.initialize();
@@ -50,22 +51,18 @@ export class getRedisConnection {
     private async functions() {
 
         const functions = [
-            'set/names',
-            'set/message', 
-            'get/chat',
-            'get/chats', 
-            'get/message',
-            'get/messages',
-            'update/chat_status_seen',
-            'update/chat_status_delivered',
-            'update/chats_status_delivered',
-            'delete/chat'
+            'message/create',
+            'chat/update/delivered',
+            'chat/update/seen',
+            'chat/get',
+            'active/insert'
         ];
 
         const filePath = path.join(__dirname, '../../scripts/@all_functions.lua');
         fs.existsSync(filePath) && fs.unlinkSync(filePath);
         fs.writeFileSync(filePath, directory(functions));
 
-        await this.con.sendCommand(['FUNCTION', 'LOAD', 'REPLACE', directory(functions)]);
+        // FUNCTION LIST
+        const AreFunctionsRegistered = await this.con.sendCommand(['FUNCTION', 'LOAD', 'REPLACE', directory(functions)]);
     }
 }

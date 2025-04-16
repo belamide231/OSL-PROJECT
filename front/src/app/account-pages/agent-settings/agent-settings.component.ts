@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { aSidebarComponent } from "../sidebar/sidebar.component";
 import { DataService } from '../../services/data.service';
+import { SocketService } from '../../services/socket.service';
 
 @Component({
   selector: 'app-agent-settings',
@@ -10,5 +11,4 @@ import { DataService } from '../../services/data.service';
   styleUrl: './agent-settings.component.css'
 })
 export class AgentSettingsComponent {
-   constructor(public readonly data: DataService) {}
 }

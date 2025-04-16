@@ -3,9 +3,8 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SidebarComponent } from "../sidebar/sidebar.component";
-import { ApiService } from '../../services/services.configuration/api.service';
-import { SocketService } from '../../services/services.configuration/socket.service';
 import { DataService } from '../../services/data.service';
+import { ApiService } from '../../services/api.service';
 
 @Component({
   selector: 'app-user-manage',
@@ -15,33 +14,33 @@ import { DataService } from '../../services/data.service';
   styleUrls: ['./user-manage.component.css'],
 })
 export class UserManageComponent {
-  constructor(private readonly api: ApiService, public readonly data: DataService) {}
-
-  agents = [
-    { name: 'John Doe', email: 'john.doe@example.com', phone: '1234567890', company: 'Ibcauto' },
-    { name: 'Jane Smith', email: 'jane.smith@example.com', phone: '9876543210', company: 'Jet' },
-  ];
-
+  constructor(
+    private readonly api: ApiService,
+    public readonly data: DataService) {}
   showModal = false;
   gmail = '';
 
-  openInviteModal() {
-    this.showModal = true;
+  ngOnInit(): void {
+    this.userAccountList();
   }
 
-  closeModal() {
-    this.showModal = false;
-    this.gmail = '';
+  public userInvite(): void {
+    this.api.userInvite(this.gmail).subscribe(status => {
+      alert(({
+        200: 'Successfully emailed the recepient',
+        403: 'Email did not exists',
+        500: 'Something went wrong to the server'
+      } as any)[status]);
+      this.gmail = '';
+      this.showModal = false;
+    })
   }
-
-  sendInvitation() {
-    this.data.user.api.invite(this.gmail).subscribe(status => {
-      if(status) {
-        this.gmail = '';
-        this.showModal = false;    
-      } else {
-        alert(status);
-      }
-    });
+  public userAccountList(): void {
+    // this.api.userAccountList().subscribe(response => {
+    //   if(typeof response !== 'number' && isNaN(response)) {
+    //     this.listOfAgents = JSON.parse(response).result;
+    //   }
+    // });
+    this.api.userAccountList();
   }
 }

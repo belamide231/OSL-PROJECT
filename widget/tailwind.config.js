@@ -5,10 +5,10 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: 'var(--primary_color)',
-        secondary: 'var(--secondary_color)',
-        accent: 'var(--accent_color)',
-        whites: 'var(--whites_color)',      
+        primary: 'var(--primary-color)',
+        secondary: 'var(--secondary-color)',
+        accent: 'var(--accent-color)',
+        whites: 'var(--whites-color)',      
       }
     },
   },

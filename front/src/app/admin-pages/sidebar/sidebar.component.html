@@ -24,7 +24,7 @@
       <nav class="mt-16 ml-1 space-y-6">
         <!-- Dashboard Tab -->
         <a
-          routerLink="/dashboard"
+          routerLink="/"
           class="flex items-center px-4 py-2 text-sm font-medium hover:text-accent hover:font-semibold rounded-lg"
         >
         <svg class="h-5 w-5" viewBox="0 -0.5 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -142,21 +142,21 @@
 
       <!-- Logout Button -->
       <a
-      (click)="this.data.sidebar.logout()"
+      (click)="logout()"
       class="flex items-center px-4 py-2 text-sm font-medium hover:text-accent hover:font-semibold rounded-lg cursor-pointer"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke-width="2"
-        stroke="currentColor"
-        class="w-5 h-5"
       >
-        <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H3" />
-      </svg>
-      <span *ngIf="!isCollapsed" class="ml-3 fade-in">Logout</span>
-    </a>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="2"
+          stroke="currentColor"
+          class="w-5 h-5"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H3" />
+        </svg>
+        <span *ngIf="!isCollapsed" class="ml-3 fade-in">Logout</span>
+      </a>
     
     </div>
   </div>

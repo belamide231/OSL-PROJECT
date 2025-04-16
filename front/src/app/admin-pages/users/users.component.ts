@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { SidebarComponent } from "../sidebar/sidebar.component";
-import { ApiService } from '../../services/services.configuration/api.service';
-import { SocketService } from '../../services/services.configuration/socket.service';
+import { ApiService } from '../../services/api.service';
+import { SocketService } from '../../services/socket.service';
 import { DataService } from '../../services/data.service';
 
 @Component({
@@ -11,10 +11,6 @@ import { DataService } from '../../services/data.service';
   templateUrl: './users.component.html',
   styleUrl: './users.component.css'
 })
-export class UsersComponent implements OnInit {
-
-  constructor(public readonly data: DataService) {}
-
-  ngOnInit(): void {}
-
+export class UsersComponent {
+  constructor() {}
 }

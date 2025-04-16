@@ -1,0 +1,17 @@
+<!-- <ul class="space-y-3 overflow-y-auto overflow-x-hidden h-[40vh]">
+  <li *ngFor="let chatHead of data.chat.chatListHeads"
+    (click)="selectChat(chatHead)"
+    style="animation: color .5s ease"
+    class="cursor-pointer p-3 hover:bg-gray-300 rounded-lg select-none drop-shadow"
+    [ngClass]="chatHead.chatmate_id === chatHead.sender_id && chatHead.content_status !== 'seen' ? 'bg-gray-200' : 'bg-gray-100' "
+  >
+    <div class="flex justify-between items-center mb-1">
+      <span class="text-primary font-semibold">{{ chatHead.chatmate }}</span>
+      <span class="text-xs text-gray-500">{{ timePassed(chatHead.sent_at) }}</span>
+    </div>
+    <div class="flex flex-row justify-between items-end">
+      <p class="text-sm text-gray-600 truncate max-w-[85%]" [ngClass]="chatHead.chatmate_id === chatHead.sender_id && chatHead.content_status !== 'seen' ? 'font-bold' : '' ">{{ chatHead.chatmate_id === chatHead.sender_id ? chatHead.chatmate + ': ' + chatHead.content : 'You: ' + chatHead.content }}</p>
+      <div [ngClass]="chatHead.content_status === 'seen' && chatHead.sender_id !== chatHead.chatmate_id ? 'opacity-1': 'opacity-0' " class="rounded-full bg-accent text-xs font-mono size-4 flex justify-center items-center text-white" style="animation: opacity .3s ease;">{{chatHead.chatmate[0]}}</div>  
+    </div>
+  </li>
+</ul> -->

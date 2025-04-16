@@ -87,12 +87,11 @@ export const verifyAccessToken = (token: string) => {
 }
 
 
-export const generateInvitationToken = (email: string, company: string, role: string) => {
-
+export const generateInvitationToken = (email: string, company: string, role: string, duration: number) => {
     const privateKey = process.env.JWT_REFRESH_SECRET;
     return privateKey ? jwt.sign({ 
-        iat: timestamp(),
-        exp: timestamp() + (60 * 60),
+        iat: (timestamp() + duration) * 1000,
+        exp: timestamp() + duration,
         iss: process.env.APP,
         aud: 'invitation-api',
         email,
@@ -102,26 +101,16 @@ export const generateInvitationToken = (email: string, company: string, role: st
         algorithm: 'HS256'
     }) : false;    
 }
-export const verifyInvitationToken = (invitationToken: string) => {
+export const verifyInvitationToken = (invitationToken: string): boolean | any => {
 
     try {
 
         const secret = process.env.JWT_REFRESH_SECRET;
-
-        return secret ? {
-            token: true,
-            payload: jwt.verify(invitationToken, secret)
-        } : {
-            token: false,
-            payload: null
-        }
+        return secret ? jwt.verify(invitationToken, secret) : false
 
     } catch {
 
-        return {
-            token: false,
-            payload: null
-        };
+        return false;
     }
 
 }

@@ -9,7 +9,6 @@ import http from 'http';
 import cookieParser from 'cookie-parser';
 import Chance from 'chance';
 import fs from 'fs';
-import { v4 } from 'uuid';
 import { Server } from 'socket.io';
 
 dontenv.config();
@@ -25,6 +24,7 @@ import { pageController } from './controllers/pageController';
 import { widgetController } from './controllers/widgetController';
 import { cookiesParser } from './utilities/cookieParser';
 import { companyController } from './controllers/companyController';
+import { GuardsController } from './controllers/guardsController';
 
 export const tmp = path.join(__dirname, '../tmp');
 export const level = getLevelConnection();
@@ -67,7 +67,7 @@ app.use(urlencoded({
     extended: true 
 }));
 app.use(cors({
-    origin,
+    origin: origin,
     credentials: true
 }));
 app.set("trust proxy", 1);
@@ -89,21 +89,18 @@ app.use(messageController);
 app.use(accountController);
 app.use(companyController);
 app.use(widgetController);
+app.use(GuardsController);
+
+console.log(new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString());  
 
 refresher();
-io.engine.on('initial_headers', (headers, request) => {
-    const cookies = cookiesParser(request.headers.cookie) as any;
-
-    /* FOR DEVELOPMENT PURPOSE */
-    if((!cookies['rtk'] || !cookies['atk']) && !cookies['sid']) {
-        headers['Set-Cookie'] = `sid=${v4()}; Path=/; HttpOnly`;
-    }
-})
-io.on('connection', Connection.connectionAuthenticator);    
+io.on('connection', Connection.ConnectionAuthenticator);    
 
 (async () => {
     if(mysql && await redis.con.ping()) {
-        server.listen(process.env.CLOUD_HOST ? process.env.PORT : 3000, () => {
+        server.listen(process.env.CLOUD_HOST ? process.env.PORT : 3000, async () => {
+            
+            // await redis.con.flushAll();
             console.log(`RUNNING ON PORT: ${process.env.CLOUD_HOST ? process.env.PORT : '3000'}`);
         });
     }

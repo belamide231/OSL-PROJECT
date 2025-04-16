@@ -1,8 +1,24 @@
-<div class="h-[100vh] py-32 px-80">
-    <form (ngSubmit)="register()" class="flex flex-col gap-3 py-60 px-80 my-auto bg-accent rounded-sm">
-        <h1 class="text-xl">Enter your username and password</h1>
-        <input [(ngModel)]="username" name="username" class="border border-black h-10 pl-5" type="text" placeholder="Username">
-        <input [(ngModel)]="password" name="password" class="border border-black h-10 pl-5" type="password" placeholder="Password">
-        <input class="border border-black h-10" type="submit">
-    </form>
-</div>
+<div class="h-[100vh] w-full bg-[url('assets/images/cars.jpg')] backdrop-grayscale bg-center bg-cover flex items-center justify-center min-h-screen absolute"></div>
+<main class="h-screen w-full absolute bg-[#181818] bg-opacity-90 z-0 flex items-center justify-center">
+    <section class="min-w-[768px] max-w-[768px] justify-end max-h-[400px] min-h-[400px] border border-white rounded-md flex flex-row bg-[#181818] p-2 gap-4">
+        <aside class="italic font-bold text-4xl text-right font-['Lexend_Deca'] max-w-[40%] min-w-[40%] flex items-center text-white">Your Gateway to Seamless Communication</aside>
+        <form (ngSubmit)="userRegistration()" class="flex flex-col justify-center min-h-[100%] min-w-[50%] bg-accent rounded-sm border outline-none bg-white p-6 gap-1">
+            <h1 class="text-red-600 text-center mb-4 italic font-bold text-4xl font-['Lexend_Deca']">Sig-up</h1>
+            <h3 class="text-sm"  [ngClass]="success === true ? 'text-gray-600' : 'text-red-600' ">{{message}}</h3>
+            <label class="w-full" *ngIf="success === false">
+                <p class="text-sm text-gray-700">Username</p>
+                <input type="button" [(ngModel)]="username" name="username" class="border border-gray-300 h-10 pl-5 w-full rounded-md" type="text" placeholder="">
+            </label>
+            <label *ngIf="!success" class="w-full">
+                <p class="text-sm text-gray-700">Password</p>
+                <input type="button" [(ngModel)]="password" name="password" class="border border-gray-300 h-10 pl-5 w-full rounded-md" type="password" placeholder="">
+            </label>
+            <label *ngIf="!success" class="w-full">
+                <p class="text-sm text-gray-700">Verify password</p>
+                <input type="button" [(ngModel)]="verifyPassword" name="verifyPassword" class="border border-gray-300 h-10 pl-5 w-full rounded-md" type="password" placeholder="">
+            </label>
+            <input *ngIf="!success" type="button" class="h-10 cursor-pointer w-full bg-red-600 text-white rounded-md border-none outline-none mt-5" type="submit">
+            <input *ngIf="success" type="button" class="h-10 cursor-pointer bg-red-600 text-white rounded" value="Login" (click)="navigateLogin()">
+        </form>
+    </section>
+</main>

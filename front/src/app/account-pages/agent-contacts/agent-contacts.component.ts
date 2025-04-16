@@ -3,6 +3,7 @@ import { aSidebarComponent } from "../sidebar/sidebar.component";
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { DataService } from '../../services/data.service';
+import { SocketService } from '../../services/socket.service';
 
 @Component({
   selector: 'app-agent-contacts',
@@ -12,6 +13,9 @@ import { DataService } from '../../services/data.service';
   styleUrl: './agent-contacts.component.css'
 })
 export class AgentContactsComponent {
+  constructor(
+    private router: Router) {}
+
   contacts = [
     { name: 'John Doe', status: 'Online', avatar: 'assets/avatars/john.jpg', id: 1 },
     { name: 'Jane Smith', status: 'Away', avatar: 'assets/avatars/jane.jpg', id: 2 },
@@ -20,8 +24,6 @@ export class AgentContactsComponent {
   ];
 
   filteredContacts = [...this.contacts];
-
-  constructor(private router: Router, public data: DataService) {}
 
   ngOnInit(): void {}
 

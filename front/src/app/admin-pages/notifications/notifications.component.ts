@@ -1,8 +1,7 @@
 import { Component } from '@angular/core';
 import { SidebarComponent } from '../sidebar/sidebar.component';
-import { ApiService } from '../../services/services.configuration/api.service';
-import { SocketService } from '../../services/services.configuration/socket.service';
-import { DataService } from '../../services/data.service';
+import { SocketService } from '../../services/socket.service';
+import { ApiService } from '../../services/api.service';
 
 @Component({
   selector: 'app-notifications',
@@ -12,5 +11,6 @@ import { DataService } from '../../services/data.service';
   styleUrl: './notifications.component.css'
 })
 export class NotificationsComponent {
-  constructor(public readonly data: DataService) {}
+  constructor(
+    private readonly api: ApiService) {}
 }

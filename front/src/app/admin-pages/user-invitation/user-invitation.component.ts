@@ -2,8 +2,8 @@ import { CommonModule,  } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { ApiService } from '../../services/services.configuration/api.service';
-import { SocketService } from '../../services/services.configuration/socket.service';
+import { ApiService } from '../../services/api.service';
+import { SocketService } from '../../services/socket.service';
 
 @Component({
   selector: 'app-user-invitation',
@@ -23,7 +23,7 @@ export class UserInvitationComponent implements OnInit {
   email: string | null = null;
   company: string | null = null;
 
-  constructor(private route: ActivatedRoute, private readonly socket: SocketService) {}
+  constructor(private route: ActivatedRoute) {}
 
   ngOnInit() {
     // Fetch query parameters from the URL

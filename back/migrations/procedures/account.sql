@@ -1,17 +1,23 @@
 CREATE PROCEDURE create_account(IN in_user VARCHAR(99), IN in_password VARCHAR(99), IN in_email VARCHAR(99), IN in_company_name VARCHAR(99), IN in_role VARCHAR(99))
 BEGIN
 
-    INSERT INTO tbl_users(user, password)
-    VALUES(in_user, in_password);
+    IF EXISTS(SELECT 1 FROM tbl_users WHERE user = in_user) THEN
+        SELECT 'Username already taken' AS message, 404 AS status_code;
+    ELSE 
 
-    SET @id = LAST_INSERT_ID();
+        INSERT INTO tbl_users(user, password)
+        VALUES(in_user, in_password);
 
-    INSERT INTO tbl_roles(user_id, company_name, role)
-    VALUES(@id, in_company_name, in_role);
+        SET @id = LAST_INSERT_ID();
 
-    INSERT INTO tbl_profiles(user_id, email, first_name)
-    VALUES(@id, in_email, in_email);
+        INSERT INTO tbl_roles(user_id, company_name, role)
+        VALUES(@id, in_company_name, in_role);
 
+        INSERT INTO tbl_profiles(user_id, email, first_name)
+        VALUES(@id, in_email, in_email);
+
+        SELECT 'Account created successfully' as message, 200 AS status_code;
+    END IF;
 END;;
 
 

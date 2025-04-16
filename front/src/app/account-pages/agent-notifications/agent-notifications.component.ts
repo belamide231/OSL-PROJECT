@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { aSidebarComponent } from "../sidebar/sidebar.component";
-import { DataService } from '../../services/data.service';
+import { SocketService } from '../../services/socket.service';
 
 @Component({
   selector: 'app-agent-notifications',
@@ -10,5 +10,4 @@ import { DataService } from '../../services/data.service';
   styleUrl: './agent-notifications.component.css'
 })
 export class AgentNotificationsComponent {
-  constructor(public data: DataService) {}
 }

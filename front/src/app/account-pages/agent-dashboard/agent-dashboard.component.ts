@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { aSidebarComponent } from '../sidebar/sidebar.component';
-import { DataService } from '../../services/data.service';
+import { SocketService } from '../../services/socket.service';
+
 @Component({
   selector: 'app-agent-dashboard',
   standalone: true,
@@ -9,5 +10,4 @@ import { DataService } from '../../services/data.service';
   styleUrl: './agent-dashboard.component.css'
 })
 export class AgentDashboardComponent {
-  constructor(public data: DataService) {}
 }

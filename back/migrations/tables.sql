@@ -4,21 +4,12 @@ CREATE TABLE tbl_users (
     password VARCHAR(99),
     INDEX idx_user(user)
 );
-
-CREATE TABLE tbl_roles_available(
-    role VARCHAR(99) PRIMARY KEY
-);
-
-INSERT INTO tbl_roles_available(role) VALUES("admin"), ("account"), ("superUser"), ("user");
-
 CREATE TABLE tbl_roles (
     user_id INT,
     company_name VARCHAR(99),
-    role VARCHAR(99),
-    FOREIGN KEY(role) REFERENCES tbl_roles_available(role),
+    role ENUM('admin', 'account') NOT NULL,
     FOREIGN KEY(user_id) REFERENCES tbl_users(id)
 );
-
 CREATE TABLE tbl_profiles (
     user_id INT,
     first_name VARCHAR(99),
@@ -31,63 +22,55 @@ CREATE TABLE tbl_profiles (
     FOREIGN KEY(user_id) REFERENCES tbl_users(id)
 );
 
-CREATE TABLE tbl_messages (
-    id INT PRIMARY KEY UNIQUE,
-    sent_at DATETIME,
-    seen_at DATETIME NULL,
-    delivered_at DATETIME NULL,
-    content_type VARCHAR(10),
-    content VARCHAR(7999),
-    sender_id INT,
-    receiver_id INT,
-    content_status VARCHAR(20),
-    company_name VARCHAR(99) NULL,
-    FOREIGN KEY(sender_id) REFERENCES tbl_users(id),
-    FOREIGN KEY(receiver_id) REFERENCES tbl_users(id),
-    INDEX idx_sent_at(sent_at),
-    INDEX idx_sender_id(sender_id),
-    INDEX idx_receiver_id(receiver_id),
-    INDEX idx_content_status(content_status),
-    INDEX idx_company_name(company_name)
+
+CREATE TABLE tbl_customer_chats (
+    chat_id INT UNIQUE NOT NULL,
+    latest_message_id INT DEFAULT NULL,
+    latest_message_stamp DATETIME DEFAULT NULL
+);
+CREATE TABLE tbl_customer_chat_members (
+    chat_id INT NOT NULL,
+        FOREIGN KEY(chat_id) REFERENCES tbl_customer_chats(chat_id),
+    member_id VARCHAR(99) NOT NULL UNIQUE,
+    member_message_delivered_stamp DATETIME DEFAULT NULL,
+    member_message_seen_stamp DATETIME DEFAULT NULL
+);
+CREATE TABLE tbl_customer_chat_messages (
+    message_id INT PRIMARY KEY UNIQUE NOT NULL,
+    chat_id INT NOT NULL,
+        FOREIGN KEY(chat_id) REFERENCES tbl_customer_chats(chat_id),
+    sent_at DATETIME NOT NULL,
+    sender_id VARCHAR(99) NOT NULL,
+        FOREIGN KEY(sender_id) REFERENCES tbl_customer_chat_members(member_id),
+    message_type ENUM('text', 'file') NOT NULL,
+    message VARCHAR(9999) 
 );
 
-CREATE TABLE tbl_messages_head (
-    message_id INT,
-    sender_id INT,
-    receiver_id INT,
-    sent_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(message_id) REFERENCES tbl_messages(id),
-    FOREIGN KEY(sender_id) REFERENCES tbl_users(id),
-    FOREIGN KEY(receiver_id) REFERENCES tbl_users(id),
-    INDEX idx_message_id(message_id),
-    INDEX idx_sender_id(sender_id),
-    INDEX idx_receiver_id(receiver_id)
+
+CREATE TABLE tbl_chats (
+    chat_id INT UNIQUE NOT NULL,
+    latest_message_id INT DEFAULT NULL,
+    latest_message_stamp DATETIME DEFAULT NULL
+);
+CREATE TABLE tbl_chat_messages (
+    message_id INT PRIMARY KEY UNIQUE NOT NULL,
+    chat_id INT NOT NULL,
+        FOREIGN KEY(chat_id) REFERENCES tbl_chats(chat_id),
+    sent_at DATETIME NOT NULL,
+    sender_id INT NOT NULL,
+        FOREIGN KEY(sender_id) REFERENCES tbl_users(id),
+    message_type ENUM('text', 'file') NOT NULL,
+    message VARCHAR(9999) 
+);
+CREATE TABLE tbl_chat_members (
+    chat_id INT NOT NULL,
+        FOREIGN KEY(chat_id) REFERENCES tbl_chats(chat_id),
+    member_id INT NOT NULL,
+        FOREIGN KEY(member_id) REFERENCES tbl_users(id),
+    member_message_delivered_stamp DATETIME DEFAULT NULL,
+    member_message_seen_stamp DATETIME DEFAULT NULL
 );
 
-CREATE TABLE tbl_messages_head_logs (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    sent_at DATETIME,
-    sender_id INT,
-    receiver_id INT,
-    INDEX idx_sender_id(sender_id),
-    INDEX idx_receiver_id(receiver_id)
-);
-
-CREATE TABLE tbl_messages_logs (
-    head_id INT,
-    sent_at DATETIME,
-    content_type VARCHAR(10),
-    content VARCHAR(7999),
-    sender_id INT,
-    receiver_id INT,
-    content_status VARCHAR(20),
-    seen_at DATETIME DEFAULT NULL,
-    company_name VARCHAR(99),
-    FOREIGN KEY(head_id) REFERENCES tbl_messages_head_logs(id),
-    INDEX idx_sent_at(sent_at),
-    INDEX idx_sender_id(sender_id),
-    INDEX idx_receiver_id(receiver_id)
-);
 
 CREATE TABLE tbl_tickets (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -105,6 +88,7 @@ CREATE TABLE tbl_tickets (
     FOREIGN KEY(user_id) REFERENCES tbl_users(id),
     FOREIGN KEY(agent_id) REFERENCES tbl_users(id)
 );
+
 
 CREATE TABLE tbl_company_theme (
     company VARCHAR(99),

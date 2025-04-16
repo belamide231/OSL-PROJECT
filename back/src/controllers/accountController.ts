@@ -1,16 +1,13 @@
 import { Router, Request, Response } from "express";
 import { loginAccountDto } from "../dto/accountController/loginAccountDto";
-import { createAccountDTO } from "../dto/accountController/createAccountDto";
-import { createAccountService, inviteToSignupService, loginAccountService, logoutAccountService } from "../services/accountServices";
+import { createAccountService, getListOfAccounts, InviteToSignupService, loginAccountService } from "../services/accountServices";
 import { cookieOptions } from "../app";
-import { isAuthenticated } from "../guards/isAuthenticated";
-import { isAuthorized } from "../guards/isAuthorized";
+import { isAuthenticated } from "../middlewares/isAuthenticated";
+import { isAuthorized } from "../middlewares/isAuthorized";
 export const accountController = Router();
 
-
-accountController.post('/loginAccount', async (req: Request, res: Response): Promise<any> => {
+accountController.post('/account/login', async (req: Request, res: Response): Promise<any> => {
     const response = await loginAccountService(req.body as loginAccountDto) as { rtk: string, role: string };
-
     if(typeof response === 'number' && isFinite(response)) {
         return res.sendStatus(response);
     } 
@@ -18,21 +15,42 @@ accountController.post('/loginAccount', async (req: Request, res: Response): Pro
     return res.json({ role: response.role });
 });
 
-
-accountController.post('/logoutAccount', async (req: Request, res: Response): Promise<any> => {
-    const status = await logoutAccountService(req.sessionID);
-    return status !== 200 ? res.sendStatus(status) : res.clearCookie('rtk').clearCookie('atk').sendStatus(status);
+accountController.post('/account/logout', async (req: Request, res: Response): Promise<any> => {
+    res.clearCookie('rtk');
+    res.clearCookie('atk');
+    return res.sendStatus(200);
 });
 
-
-accountController.post('/invite', isAuthenticated, isAuthorized('admin'), async (req: Request, res: Response): Promise<any> => {
-    req.body.domain = req.headers.origin;
-    req.body.role = 'account';
-    return res.sendStatus(await inviteToSignupService(req.body));
+accountController.post('/account/invite', isAuthenticated, isAuthorized('admin'), async (req: Request, res: Response): Promise<any> => {
+    const user = req.user as any;
+    req.body.Company = user.company;
+    req.body.Role = 'account';
+    return res.sendStatus(await InviteToSignupService(req.body));
 });
 
+accountController.post('/account/create', async (req: Request, res: Response): Promise<any> => {
+    if(req.body.username.length < 8) {
+        return res.status(404).json({ message: 'Username requires 8 characters or more!' });
+    }
+    if(req.body.password.length < 8) {
+        return res.status(404).json({ message: 'Password requires 8 characters or more!' });
+    }
+    if(req.body.password !== req.body.verifyPassword) {
+        return res.status(404).json({ message: 'Password did not match!' });
+    }
 
-accountController.post('/createAccount', async (req: Request, res: Response): Promise<any> => {
-    req.body.sid = req.sessionID;
-    return res.sendStatus(await createAccountService(req.body as createAccountDTO)); 
+    const result = await createAccountService(req.body) as any;
+    if(result !== 200) {
+        return res.status(result.status_code).json({ message: result.message });
+    }
+
+    return res.sendStatus(result); 
+});
+
+accountController.post('/get/accounts', isAuthenticated, isAuthorized('admin'), async (req: Request, res: Response): Promise<any> => {
+    const result = await getListOfAccounts((req.user as any).company);
+    if(typeof result === 'number' && isFinite(result)) {;
+        return res.sendStatus(result);
+    }
+    return res.json({ result });
 });
