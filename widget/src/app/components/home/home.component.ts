@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { DataService } from '../../../services/data.service';
 import { CommonModule } from '@angular/common';
 import { CloseComponent } from "../../modals/close/close.component";
+import { SocketService } from '../../../services/socket.service';
 
 @Component({
   selector: 'app-home',
@@ -12,7 +13,9 @@ import { CloseComponent } from "../../modals/close/close.component";
   styleUrl: './home.component.css'
 })
 export class HomeComponent {
-  constructor(public Data: DataService) {}
+  constructor(
+    public Data: DataService,
+    public Socket: SocketService) {}
 
   // public activeAccountsData: null | { id: { name: string } } = null;
   // public activeAccountsDataTest: { [key:string]: { name: string } } = {

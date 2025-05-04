@@ -20,9 +20,6 @@ import { ModifierService } from '../../services/modifier.service';
   styleUrls: ['./chat.component.css'],
 })
 export class ChatComponent {
-  constructor(
-    public Data: DataService,
-    public readonly Modifier: ModifierService,
-    private readonly Api: ApiService) {}
+  constructor(public Data: DataService, public readonly Modifier: ModifierService, private readonly Api: ApiService) {}
 }
 

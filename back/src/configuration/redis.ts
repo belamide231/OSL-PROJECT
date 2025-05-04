@@ -53,8 +53,10 @@ export class getRedisConnection {
         const functions = [
             'message/create',
             'chat/update/delivered',
+            'chat/update/chat_delivered',
             'chat/update/seen',
-            'chat/get',
+            'chat/get/chats',
+            'chat/get/chat',
             'active/insert'
         ];
 

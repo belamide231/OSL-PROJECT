@@ -1,31 +1,48 @@
 -- string[]
-redis.register_function('chat_update_delivered', function (keys, args)
+redis.register_function('chats_update_delivered', function (keys, args)
 
     local user_id = tostring(keys[1])
     local stamp = tostring(args[1])
-    local recepient_list = {}
+    local recepients = {}
+    local chats = {}
 
-    local user_chat_id_list = string.format('specific_user:%s:chat_list', user_id)
-    local chat_list = redis.call('LRANGE', user_chat_id_list, 0, -1)
+    if redis.call('EXISTS', string.format('specific_user:%s:chat_list', user_id)) == 0 then
+        return cjson.null
+    end
 
-    for _, chat_id in pairs(chat_list) do
+    for _, chat in pairs(redis.call('LRANGE', string.format('specific_user:%s:chat_list', user_id), 0, -1)) do
 
-        local chat_status_key = string.format('chat:%d:status', chat_id)
-        local member_list = redis.call('LRANGE', chat_status_key, 0, -1)
+        local message = cjson.decode( redis.call('LRANGE', string.format('chat:%d:messages', tonumber(chat)), 0, 0)[1] )
+        local recepients_connections = {}
 
-        for index, member_status_string in pairs(member_list) do
+        for member_index, member in pairs(redis.call('LRANGE', string.format('chat:%d:status', chat), 0, -1)) do
 
-            local member_status = cjson.decode(member_status_string)
-            if user_id == member_status.user_id then
+            member = cjson.decode(member)
+            if user_id == member.member_id and (member.member_message_delivered_stamp == cjson.null or tostring(member.member_message_delivered_stamp) < tostring(message.sent_at)) then
 
-                member_status.user_delivered_stamp = stamp
-                redis.call('LSET', chat_status_key, index - 1, cjson.encode(member_status))
-                table.insert(recepient_list, chat_id)
+                member.member_message_delivered_stamp = stamp
 
-                break
+                table.insert(chats, chat)
+                table.insert(recepients, {
+                    status = {
+                        chat_id = chat,
+                        member_status = member,
+                    },
+                    recepients_connections = recepients_connections
+                })
+
+                redis.call('LSET', string.format('chat:%d:status', chat), member_index - 1, cjson.encode(member))
+            end
+
+            for _, connection in pairs(redis.call('LRANGE', string.format('specific_user:%s:connections', member.member_id), 0, -1)) do
+                table.insert(recepients_connections, connection)
             end
         end
     end
 
-    return recepient_list
+    if #recepients == 0 then
+        return cjson.null
+    end
+
+    return cjson.encode({ recepients = recepients, chats = chats })
 end)

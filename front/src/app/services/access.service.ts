@@ -4,9 +4,9 @@ import { Injectable } from '@angular/core';
   providedIn: 'root'
 })
 export class AccessService {
-  private Authenticated: boolean = false;
-  private Authorized: boolean = false;
-  private Company: string = 'ibc';
+  Authenticated: boolean = false;
+  Authorized: boolean = false;
+  Company: string = 'ibc';
 
   ChangeAuthentication(Authentication: boolean): void {
     this.Authenticated = Authentication;
@@ -30,11 +30,7 @@ export class AccessService {
   }
 
   SetTheme(ThemeInformation: any): void {
-    const keys = Object.keys(ThemeInformation);
-    keys.forEach(key => {
-      const elementKey = `--${key.replace('_', '-')}`;
-      const valueOfKey = ThemeInformation[key];
-      document.documentElement.style.setProperty(elementKey, valueOfKey);
-    });
+    Object.keys(ThemeInformation).forEach(key => 
+      document.documentElement.style.setProperty(key, ThemeInformation[key]));
   }
 }

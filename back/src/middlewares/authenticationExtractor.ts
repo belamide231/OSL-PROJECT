@@ -1,14 +1,13 @@
 import { Request, Response, NextFunction } from "express";
 import { generateAccessToken, generateRefreshToken, verifyAccessToken, verifyRefreshToken } from "../utilities/jwt";
 import { cookieOptions } from "../app";
-import { v4 as uuidv4 } from "uuid";
 
 const referer = {
     'http://localhost:4200/':   'ibc',
     'http://localhost:3000/':   'ibc',
     'https://www.ibcauto.com':  'ibc'
-};
-export const authenticationExtractor = (req: Request, res: Response, next: NextFunction) => {
+}
+export const AuthenticationExtractor = (req: Request, res: Response, next: NextFunction) => {
 
     const user: any = {};
     const atk = verifyAccessToken(req.cookies['atk']);

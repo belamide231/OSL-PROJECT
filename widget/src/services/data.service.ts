@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import * as Interfaces from '../interfaces/interface';
 
 @Injectable({
   providedIn: 'root',
@@ -10,8 +11,10 @@ export class DataService {
 
   Page: string | null = null;
   Company: string | null = null;
-  Chat = {
-    CurrentAttachedFile: null as any | null,
-    CurrentInputtedMessage: ''
-  }
+
+  CurrentAttachedFile: null | any = null;
+  CurrentInputtedMessage: string = '';
+
+  CurrentChat: number | null = null;
+  Chats: Interfaces.ChatListInterface[] = [];
 }

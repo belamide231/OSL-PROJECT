@@ -17,14 +17,27 @@ const jsonheaders = { headers: { 'Content-Type': 'application/json' }, withCrede
   providedIn: 'root',
 })
 export class ApiService {
-  constructor(
-    private readonly Http: HttpClient, 
-    private readonly Access: AccessService,
-    public Data: DataService) {}
+  constructor(private readonly Http: HttpClient, private readonly Access: AccessService, public Data: DataService) {
+    if(!Access.Authenticated || !Access.Authorized) 
+      return;
 
-  Initialization(): void {
     this.companyLoadTheme();
-    this.companyLoadActiveUser();
+
+    /**@For {user-manage} */
+    this.FetchCompanyAuthorities();
+
+    /**@For {chat} */
+    this.FetchActives();
+    this.FetchUsers();
+  }
+
+  async FetchUsers() {
+    try {
+      const Response = await firstValueFrom(this.Http.post(domain('/chat/fetch/users'), null, jsonheaders)).then(Response => Response.body);
+      console.log(Response);
+    } catch (Error) {
+      console.log('FetchUsers', Error);
+    }
   }
 
   userLogin(username: string, password: string): Observable<any> {
@@ -60,27 +73,32 @@ export class ApiService {
       console.log(error);
     }
   }
-  private async companyLoadActiveUser(): Promise<void> {
+  private async FetchCompanyAuthorities(): Promise<void> {
     try {
-      const response = await firstValueFrom(this.Http.post(domain('/get/active/scoped/users'), null, jsonheaders).pipe((response: any) => response)) as any;
-      console.log(response.body);
-      this.Data.Chat.ActiveUserOfThisCompany = response.body;
-    } catch(error) {
+      const response = await firstValueFrom(this.Http.post(domain('/fetch/company/authorities'), null, jsonheaders)).then(Response => Response.body) as any;
+      console.log('FetchCompanyAuthorities', response);
+      this.Data.Chat.ActiveUserOfThisCompany = response;
+    } catch (error) {
       console.log(error);
     }
   }
   private async companyLoadTheme(): Promise<void> {
-    this.Http.post(domain('/getCompanyTheme'), null, headers)
-      .pipe(map((response: any) => JSON.parse(response.body)), 
-      catchError((error) => {
-        return of(false);
-      })
-    ).subscribe(response => {
-      if(typeof response === 'boolean' && response === false) {
-        return alert('Error connection');
-      }
-      this.Access.SetTheme(response);
-    });
+    try {
+      const Response = await firstValueFrom(this.Http.post(domain('/fetch/company/theme/forAuthorize'), { Company: this.Access.Company }, jsonheaders)).then(Response => Response.body);
+      this.Access.SetTheme(Response);
+    } catch (Error: any) {
+      console.log('companyLoadTheme', Error);
+    }
+  }
+  private async FetchActives(): Promise<void> {
+    try {
+
+      const Response = await firstValueFrom(this.Http.post( domain('/chat/fetch/actives'), null, jsonheaders )).then(Response => Response.body);
+      console.log('FetchActives', Response);
+
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   // loadActiveClients = ():Observable<any> => this.Http.post(this.dns('getActiveClients'), null, this.headers).pipe(map((response: any) => JSON.parse(response.body)), catchError((error) => of(error.status)));

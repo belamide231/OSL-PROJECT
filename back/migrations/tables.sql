@@ -13,8 +13,7 @@ CREATE TABLE tbl_roles (
 CREATE TABLE tbl_profiles (
     user_id INT,
     first_name VARCHAR(99),
-    last_name VARCHAR(99),
-    middle_name VARCHAR(99),
+    full_name VARCHAR(499),
     email VARCHAR(99),
     phone VARCHAR(11),
     address VARCHAR(200),
@@ -23,32 +22,9 @@ CREATE TABLE tbl_profiles (
 );
 
 
-CREATE TABLE tbl_customer_chats (
-    chat_id INT UNIQUE NOT NULL,
-    latest_message_id INT DEFAULT NULL,
-    latest_message_stamp DATETIME DEFAULT NULL
-);
-CREATE TABLE tbl_customer_chat_members (
-    chat_id INT NOT NULL,
-        FOREIGN KEY(chat_id) REFERENCES tbl_customer_chats(chat_id),
-    member_id VARCHAR(99) NOT NULL UNIQUE,
-    member_message_delivered_stamp DATETIME DEFAULT NULL,
-    member_message_seen_stamp DATETIME DEFAULT NULL
-);
-CREATE TABLE tbl_customer_chat_messages (
-    message_id INT PRIMARY KEY UNIQUE NOT NULL,
-    chat_id INT NOT NULL,
-        FOREIGN KEY(chat_id) REFERENCES tbl_customer_chats(chat_id),
-    sent_at DATETIME NOT NULL,
-    sender_id VARCHAR(99) NOT NULL,
-        FOREIGN KEY(sender_id) REFERENCES tbl_customer_chat_members(member_id),
-    message_type ENUM('text', 'file') NOT NULL,
-    message VARCHAR(9999) 
-);
-
-
 CREATE TABLE tbl_chats (
     chat_id INT UNIQUE NOT NULL,
+    is_recepient_customer BOOLEAN NOT NULL,
     latest_message_id INT DEFAULT NULL,
     latest_message_stamp DATETIME DEFAULT NULL
 );
@@ -56,17 +32,17 @@ CREATE TABLE tbl_chat_messages (
     message_id INT PRIMARY KEY UNIQUE NOT NULL,
     chat_id INT NOT NULL,
         FOREIGN KEY(chat_id) REFERENCES tbl_chats(chat_id),
+        INDEX idx_chat_id (chat_id),
     sent_at DATETIME NOT NULL,
-    sender_id INT NOT NULL,
-        FOREIGN KEY(sender_id) REFERENCES tbl_users(id),
+    sender_id VARCHAR(99) NOT NULL,
+    sender VARCHAR(99) NOT NULL,
     message_type ENUM('text', 'file') NOT NULL,
     message VARCHAR(9999) 
 );
 CREATE TABLE tbl_chat_members (
     chat_id INT NOT NULL,
-        FOREIGN KEY(chat_id) REFERENCES tbl_chats(chat_id),
-    member_id INT NOT NULL,
-        FOREIGN KEY(member_id) REFERENCES tbl_users(id),
+    member VARCHAR(99),
+    member_id VARCHAR(99) NOT NULL,
     member_message_delivered_stamp DATETIME DEFAULT NULL,
     member_message_seen_stamp DATETIME DEFAULT NULL
 );

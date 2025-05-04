@@ -20,19 +20,19 @@
 	<!-- Form -->
 	<form class="m-0 p-3 h-fit flex flex-row bg-whites border-t border-gray-500 items-end gap-2 select-none">
 
-		<label *ngIf="Data.Chat.CurrentInputtedMessage === '' && Data.Chat.CurrentAttachedFile === null" class="min-h-10 ring-1 ring-accent cursor-pointer px-4 flex justify-center items-center select-none rounded-sm text-whites bg-accent" for="attachment">
+		<label *ngIf="Data.CurrentInputtedMessage === '' && Data.CurrentAttachedFile === null" class="min-h-10 ring-1 ring-accent cursor-pointer px-4 flex justify-center items-center select-none rounded-sm text-whites bg-accent" for="attachment">
 			<span class="text-2xl font-thin">#</span>
 			<input class="hidden" id="attachment" type="file" (change)="Modifier.AttachFile($event)">
 		</label>
 
-		<textarea *ngIf="!Data.Chat.CurrentAttachedFile" [(ngModel)]="Data.Chat.CurrentInputtedMessage" name="CurrentInputtedMessage" class="min-h-10 max-h-60 flex-grow overflow-y-scroll resize-none outline-none ring-1 ring-gray-500 text-gray-700 border-x-4 border-transparent py-2 pl-2 pr-1 rounded-sm scroll-button-transparent" rows="1" oninput="this.style.height = 'fit-content'; this.style.height = (this.scrollHeight) + 'px'; " placeholder="Type..."></textarea>
+		<textarea *ngIf="!Data.CurrentAttachedFile" [(ngModel)]="Data.CurrentInputtedMessage" name="CurrentInputtedMessage" class="min-h-10 max-h-60 flex-grow overflow-y-scroll resize-none outline-none ring-1 ring-gray-500 text-gray-700 border-x-4 border-transparent py-2 pl-2 pr-1 rounded-sm scroll-button-transparent" rows="1" oninput="this.style.height = 'fit-content'; this.style.height = (this.scrollHeight) + 'px'; " placeholder="Type..."></textarea>
 		
-    	<label *ngIf="Data.Chat.CurrentAttachedFile" class="flex-grow relative justify-center items-center z-0">
-			<span class="absolute text-sm text-white top-0 right-0 mr-2 mt-2 cursor-pointer h-6 w-6 bg-accent bg-opacity-50 flex items-center justify-center rounded-full pb-[2px]" (click)="Data.Chat.CurrentAttachedFile = null">×</span>
-			<img class="object-contain max-h-60" [src]="Data.Chat.CurrentAttachedFile" />
+    	<label *ngIf="Data.CurrentAttachedFile" class="flex-grow relative justify-center items-center z-0">
+			<span class="absolute text-sm text-white top-0 right-0 mr-2 mt-2 cursor-pointer h-6 w-6 bg-accent bg-opacity-50 flex items-center justify-center rounded-full pb-[2px]" (click)="Data.CurrentAttachedFile = null">×</span>
+			<img class="object-contain max-h-60" [src]="Data.CurrentAttachedFile" />
 		</label>
 
-		<input *ngIf="Data.Chat.CurrentAttachedFile !== null || Data.Chat.CurrentInputtedMessage !== '' " class="min-h-10 ring-1 ring-accent text-whites bg-accent cursor-pointer rounded-sm px-3" type="submit" value="Send">
+		<input *ngIf="Data.CurrentAttachedFile !== null || Data.CurrentInputtedMessage !== '' " class="min-h-10 ring-1 ring-accent text-whites bg-accent cursor-pointer rounded-sm px-3" type="submit" value="Send">
 
 	</form>
 

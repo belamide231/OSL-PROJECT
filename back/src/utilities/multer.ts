@@ -1,6 +1,7 @@
 import multer from 'multer';
 import path from 'path';
 import { tmp } from '../app';
+import { v4 } from 'uuid';
 
 const storage = multer.diskStorage({
     destination: (req, file, callback) => {
@@ -8,9 +9,9 @@ const storage = multer.diskStorage({
     },
     filename: (req, file, callback) => {
         const fileExtension = path.extname(file.originalname);
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const uniqueSuffix = Date.now() + '-' + v4();
         callback(null, file.fieldname + '-' + uniqueSuffix + fileExtension);
     }
 });
 
-export const upload = multer({ storage: storage });
+export const MulterUpload = multer({ storage: storage });

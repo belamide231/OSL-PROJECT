@@ -14,11 +14,11 @@
 -- }
 
 redis.register_function('create_message', function (keys, args)
-
     local existing_in_db = true;
     local list_member_id = cjson.decode(keys[1])
-
     local new_message_object = cjson.decode(args[1])
+    local is_recepient_customer = tostring(args[2])
+    local recepients_connections = {}
 
     if new_message_object.chat_id == cjson.null then
 
@@ -26,14 +26,24 @@ redis.register_function('create_message', function (keys, args)
         existing_in_db = false;
     end
 
-    local chat_status_key = string.format('chat:%d:status', new_message_object.chat_id)
-    if redis.call('EXISTS', chat_status_key) == 0 then
+    if redis.call('EXISTS', string.format('chat:%d:status', new_message_object.chat_id)) == 0 then
+
+        redis.call('SET', string.format('chat:%d:is_recepient_customer', new_message_object.chat_id), is_recepient_customer)
         for _, member_id in pairs(list_member_id) do
-            local chat_status_key = string.format('chat:%d:status', new_message_object.chat_id)
-            redis.call('LPUSH', chat_status_key, cjson.encode({
-                user_id = member_id,
-                user_delivered_stamp = cjson.null,
-                user_seen_stamp = cjson.null
+
+            local member = member_id
+            if redis.call('EXISTS', string.format('user_information:%s', member_id) ) == 1 then
+                local str = redis.call('GET', string.format('user_information:%s', member_id) )
+                local information = cjson.decode(str)
+                member = tostring(information.name)
+            end
+
+            redis.call('LPUSH', string.format('chat:%d:status', new_message_object.chat_id), cjson.encode({
+
+                member = member,
+                member_id = member_id,
+                member_message_delivered_stamp = cjson.null,
+                member_message_seen_stamp = cjson.null
             }))
         end
     end
@@ -41,17 +51,21 @@ redis.register_function('create_message', function (keys, args)
     new_message_object.message_id = redis.call('INCR', 'id_generator:message')
 
     for _, member_id in pairs(list_member_id) do
-        local member_chat_list = string.format('specific_user:%s:chat_list', member_id);
-        redis.call('LREM', member_chat_list, 0, new_message_object.chat_id)
-        redis.call('LPUSH', member_chat_list, new_message_object.chat_id)
+        redis.call('LREM', string.format('specific_user:%s:chat_list', member_id), 0, new_message_object.chat_id)
+        redis.call('LPUSH', string.format('specific_user:%s:chat_list', member_id), new_message_object.chat_id)
     end
-    
-    local chat_messages_key = string.format('chat:%d:messages', new_message_object.chat_id)
-    redis.call('LPUSH', chat_messages_key, cjson.encode(new_message_object))
+
+    redis.call('LPUSH', string.format('chat:%d:messages', new_message_object.chat_id), cjson.encode(new_message_object))
+
+    for _, member in pairs(redis.call('LRANGE', string.format('chat:%d:status', new_message_object.chat_id), 0, -1)) do
+        for _, connection in pairs(redis.call('LRANGE', string.format('specific_user:%s:connections', cjson.decode(member).member_id), 0, -1)) do
+            table.insert(recepients_connections, connection)
+        end
+    end
 
     return cjson.encode({
         existing_in_db = existing_in_db,
         new_message_object = new_message_object,
+        recepients_connections = recepients_connections
     })
-
 end)

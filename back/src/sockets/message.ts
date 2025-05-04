@@ -2,8 +2,8 @@
 import { io } from "../app";
 import { redis } from "../app";
 import { Connection } from "./connection";
-import { SocketUser } from "../interfaces/socketUser";
-import { editingAllTheChatStatusToDeliveredService, editingTheMessageStatusToDeliveredService, seenChatService } from "../services/messageServices";
+import { SocketUser } from "./interfaces/socketUser";
+import { editingAllTheChatStatusToDeliveredService, editingTheMessageStatusToDeliveredService, seenChatService } from "../modules/chatModule/chatServices";
 
 
 // export const updatingTheChatStatusToSeen = async (receiverId: number, senderId: number): Promise<void> => {

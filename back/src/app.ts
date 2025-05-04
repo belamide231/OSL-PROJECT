@@ -18,13 +18,12 @@ import { getRedisConnection } from './configuration/redis';
 import { Connection } from './sockets/connection';
 import { getLevelConnection } from './configuration/level';
 import { refresher } from './configuration/refresher';
-import { messageController } from './controllers/messageController';
-import { accountController } from './controllers/accountController';
-import { pageController } from './controllers/pageController';
-import { widgetController } from './controllers/widgetController';
-import { cookiesParser } from './utilities/cookieParser';
-import { companyController } from './controllers/companyController';
-import { GuardsController } from './controllers/guardsController';
+import { ChatController } from './modules/chatModule/chatController';
+import { AccountController } from './modules/accountModule/accountController';
+import { PageController } from './modules/pageModule/pageController';
+import { WidgetController } from './modules/widgetModule/widgetController';
+import { CompanyController } from './modules/companyModule/companyController';
+import { GuardsController } from './modules/guardsModule/guardsController';
 
 export const tmp = path.join(__dirname, '../tmp');
 export const level = getLevelConnection();
@@ -84,14 +83,12 @@ app.use(session({
 }));
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(pageController);
-app.use(messageController);
-app.use(accountController);
-app.use(companyController);
-app.use(widgetController);
+app.use(PageController);
+app.use(ChatController);
+app.use(AccountController);
+app.use(CompanyController);
+app.use(WidgetController);
 app.use(GuardsController);
-
-console.log(new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString());  
 
 refresher();
 io.on('connection', Connection.ConnectionAuthenticator);    

@@ -1,30 +1,51 @@
-CREATE PROCEDURE create_account(IN in_user VARCHAR(99), IN in_password VARCHAR(99), IN in_email VARCHAR(99), IN in_company_name VARCHAR(99), IN in_role VARCHAR(99))
+CREATE PROCEDURE create_account(
+    parameter_username VARCHAR(99), 
+    parameter_password VARCHAR(99), 
+    parameter_email VARCHAR(99), 
+    parameter_company_name VARCHAR(99), 
+    parameter_role VARCHAR(99))
 BEGIN
 
-    IF EXISTS(SELECT 1 FROM tbl_users WHERE user = in_user) THEN
+    IF EXISTS(SELECT 1 FROM tbl_users WHERE user = parameter_username) THEN
         SELECT 'Username already taken' AS message, 404 AS status_code;
     ELSE 
 
-        INSERT INTO tbl_users(user, password)
-        VALUES(in_user, in_password);
+        INSERT INTO tbl_users(
+            user, 
+            password)
+        VALUES(
+            parameter_username, 
+            parameter_password);
 
-        SET @id = LAST_INSERT_ID();
+        SET @last_inserted_id = LAST_INSERT_ID();
 
-        INSERT INTO tbl_roles(user_id, company_name, role)
-        VALUES(@id, in_company_name, in_role);
+        INSERT INTO tbl_roles(
+            user_id, 
+            company_name, 
+            role)
+        VALUES(
+            @last_inserted_id, 
+            parameter_company_name, 
+            parameter_role);
 
-        INSERT INTO tbl_profiles(user_id, email, first_name)
-        VALUES(@id, in_email, in_email);
+        INSERT INTO tbl_profiles(
+            user_id, 
+            email, 
+            first_name)
+        VALUES(
+            @last_inserted_id, 
+            parameter_email, 
+            parameter_email);
 
         SELECT 'Account created successfully' as message, 200 AS status_code;
     END IF;
 END;;
 
 
-CREATE PROCEDURE login_account(IN in_user VARCHAR(99))
+CREATE PROCEDURE login_account(IN parameter_username VARCHAR(99))
 BEGIN
 
-    SELECT id, password INTO @id, @password FROM tbl_users WHERE user = in_user LIMIT 1;
+    SELECT id, password INTO @id, @password FROM tbl_users WHERE user = parameter_username LIMIT 1;
 
     SELECT role, company_name INTO @role, @company_name FROM tbl_roles WHERE user_id = @id LIMIT 1;
     SELECT first_name, picture INTO @name, @picture FROM tbl_profiles WHERE user_id = @id LIMIT 1;
@@ -34,7 +55,7 @@ END;;
 
 
 
-CREATE PROCEDURE get_client_names(IN clients_id VARCHAR(5000)) -- 30 RAY LIMIT
+CREATE PROCEDURE get_client_names(IN clients_id VARCHAR(5000))
 BEGIN
     DECLARE done INT DEFAULT 0;
     DECLARE client_id INT;

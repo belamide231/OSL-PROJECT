@@ -335,20 +335,14 @@ import { ApiService } from './api.service';
 // }
 export class SocketService {
   private Socket: Socket | null = null;
-  constructor(
-    private readonly Access: AccessService,
-    private readonly Api: ApiService) {
+  constructor(private readonly Access: AccessService, private readonly Api: ApiService) {
     this.Socket = io(dns, { withCredentials: true });
     this.Socket.on('connected', () => {
       console.log('You are connected!');
-      this.Api.Initialization();
     });
   }
 
   public Disconnect(): void {
-    if(this.Socket) {
-      this.Socket.disconnect();
-      this.Socket = null;
-    }
+    this.Socket && this.Socket.disconnect();
   }
 }

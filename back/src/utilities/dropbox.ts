@@ -1,10 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
+import { dropbox } from '../app';
 import fs from 'fs';
 
-import { dropbox } from '../app';
-
-export const dropboxUpload = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-    req.body.contentType = 'text';
+export const DropboxUpload = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     if(req.file !== undefined) {
 
         try {
@@ -13,18 +11,20 @@ export const dropboxUpload = async (req: Request, res: Response, next: NextFunct
             const response = await dropbox.connection.filesUpload({ path: '/chat-app/' + req.file.filename, contents: fs.readFileSync(req.file.path), mode: 'add' });
             const sharedLink = await dropbox.connection.sharingCreateSharedLinkWithSettings({ path: response.result.path_lower });
 
-            req.body.contentType = 'file';
-            req.body.content = sharedLink.result.url;
+            req.body.MessageType = 'file';
+            req.body.Message = sharedLink.result.url;
             fs.unlinkSync(req.file.path);
 
         } catch(error) {
 
-            console.log(error);
-            console.log("DROPBOX ERROR");
+            console.log('dropboxUpload', error);
             fs.unlinkSync(req.file.path);
-            return res.sendStatus(400);
+            return res.sendStatus(500);
         }
+
+    } else {
+        req.body.MessageType = 'text';
     }
 
-    next();
+    return next();
 };

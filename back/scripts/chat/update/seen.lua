@@ -12,18 +12,33 @@ redis.register_function('chat_update_seen', function (keys, args)
     local user_id = tostring(keys[2])
     local stamp = tostring(args[1])
 
-    local chat_status_key = string.format('chat:%d:status', chat_id)
-    local list_of_member = redis.call('LRANGE', chat_status_key, 0, -1)
+    if redis.call('EXISTS', string.format('chat:%d:status', chat_id)) == 0 then
+        return cjson.null
+    end
 
-    for index, element in pairs(list_of_member) do
+    local recepient = {
+        status = {
+            chat_id = chat_id,
+            member_status = {}
+        },
+        recepients_connections = {}
+    }
 
-        local object = cjson.decode(element)
-        if(object.user_id == user_id) then
-            object.user_seen_stamp = stamp
-            redis.call('LSET', chat_status_key, index - 1, cjson.encode(object))
-            return 'Updated'
+    for index, member in pairs(redis.call('LRANGE', string.format('chat:%d:status', chat_id), 0, -1)) do
+
+        member = cjson.decode(member)
+        if user_id == member.member_id then
+
+            member.member_message_seen_stamp = stamp
+            recepient.status.member_status = member
+
+            redis.call('LSET', string.format('chat:%d:status', chat_id), index - 1, cjson.encode(member))
+        end
+
+        for _, connection in pairs(redis.call('LRANGE', string.format('specific_user:%s:connections', member.member_id), 0, -1)) do
+            table.insert(recepient.recepients_connections, connection)
         end
     end
 
-    return 'Not found'
+    return cjson.encode(recepient)
 end)

@@ -2,8 +2,9 @@ import { Component } from '@angular/core';
 import { DataService } from '../../../services/data.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { ChatModifierService } from './chat.data.modifier.service';
 import { CloseComponent } from "../../modals/close/close.component";
+import { SocketService } from '../../../services/socket.service';
+import { ModiferService } from '../../../services/modifier.service';
 
 @Component({
   selector: 'app-chat',
@@ -15,5 +16,6 @@ import { CloseComponent } from "../../modals/close/close.component";
 export class ChatComponent {
   constructor(
     public Data: DataService,
-    public readonly Modifier: ChatModifierService) {}
+    public Modifier: ModiferService,
+    public Socket: SocketService) {}
 }

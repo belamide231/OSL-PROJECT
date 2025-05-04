@@ -6,48 +6,47 @@ import { host } from '../utilities/host';
 import { headers } from '../utilities/headers';
 import { GeoLocation } from '../utilities/geolocation';
 import { ThemeInitiator } from '../utilities/themeInitiator';
-import { SocketService } from './socket.service';
+import { ModiferService } from './modifier.service';
+
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
-  constructor(
-    private readonly Http: HttpClient,
-    private readonly Socket: SocketService,
-    public Data: DataService) {
-      this.WidgetInitialization();
+  constructor(private readonly Http: HttpClient, private readonly Modifier: ModiferService, public Data: DataService) {
+    this.FetchCompanyTheme();
+    this.FetchCompanyAgents();
   }
 
-  async WidgetInitialization(): Promise<void> {
-    const UserLocation = await GeoLocation();
-    this.GetCompanyThemeForCostumers(UserLocation);
-  }
-
-  async GetCompanyThemeForCostumers(address: { country: string, city: string, street: string } | {}): Promise<void> {
+  async FetchCompanyTheme(): Promise<void> {
     try {
-      const Response = await firstValueFrom(this.Http.post(host('/customer/company/theme'), address, headers)) as any;
-      if(Response.status === 200) {
-        const ThemeInitialized = await ThemeInitiator(Response.body.theme);
 
-        if(ThemeInitialized) {
-          this.Data.Company = Response.body.company;
-          this.Data.Page = 'Home';
-          console.log("Connecting");
+      const Location = await GeoLocation();
+      const Response = await firstValueFrom(this.Http.post(host('/fetch/company/theme/forCustomer'), Location, headers)) as any;
+      if(Response.status !== 200) return;
 
-          this.Socket.Connect();
-        }
-      }
+      const ThemeInitialized = await ThemeInitiator(Response.body.theme);
+      if(!ThemeInitialized) return;
+
+      this.Data.Company = Response.body.company;
+      this.Data.Page = 'Home';
+
     } catch(error) {
-      console.log('Error', error);
+
+      console.log('FetchCompanyTheme', error);
     }
   }
 
-  // function getAvailableAccountsInASpecificCompanyApi(): Observable<any> {
-  //   return this.http.post(API.endpoint('get/active/accounts'), null, API.headers()).pipe(map((response: any) => {
-  //     return JSON.parse(response.body);
-  //   }), catchError((error) => {
-  //     return of(error.status);
-  //   }));
-  // }
+  async FetchCompanyAgents(): Promise<void> {
+    try {
+
+      const Response = await firstValueFrom(this.Http.post(host('/fetch/company/agents/forCustomer'), null, headers)).then(response => response.body);
+      console.log(Response);
+
+    } catch (error) {
+
+      console.log('FetchCompanyAgents', error);
+    }
+  }
+
 }
